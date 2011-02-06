@@ -1,9 +1,3 @@
-/* NOTE: Standalone bson header for when not using MongoDB.
-   See also: bsondemo.
-
-   MongoDB includes ../db/jsobj.h instead. This file, however, pulls in much less code / dependencies.
-*/
-
 /** @file bson.h
     BSON classes
 */
@@ -27,20 +21,14 @@
 /**
    bo and its helpers
 
-   "BSON" stands for "binary JSON" -- ie a binary way to represent objects that would be
-   represented in JSON (plus a few extensions useful for databases & other languages).
+   "BSON" stands for "binary JSON" -- ie a binary way to represent objects that
+   would be represented in JSON (plus a few extensions useful for databases &
+   other languages).
 
    http://www.bsonspec.org/
 */
 
 #pragma once
-
-#if defined(MONGO_EXPOSE_MACROS)
-#error this header is for client programs, not the mongo database itself. include jsobj.h instead.
-/* because we define simplistic assert helpers here that don't pull in a bunch of util -- so that
-   BSON can be used header only.
-   */
-#endif
 
 #include <iostream>
 #include <sstream>
@@ -69,9 +57,7 @@ namespace bson {
         string msg;
         string full;
     };
-}
 
-namespace mongo {
 #if !defined(assert)
     inline void assert(bool expr) {
         if(!expr) {
@@ -109,15 +95,3 @@ namespace mongo {
 #include "../bson/bsonobjbuilder.h"
 #include "../bson/bsonobjiterator.h"
 #include "../bson/bson-inl.h"
-
-namespace mongo {
-
-    inline unsigned getRandomNumber() {
-#if defined(_WIN32)
-        return rand();
-#else
-        return random();
-#endif
-    }
-
-}
