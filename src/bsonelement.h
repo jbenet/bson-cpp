@@ -22,12 +22,9 @@
 #include "util/builder.h"
 
 namespace bson {
-    typedef mongo::BSONElement be;
-    typedef mongo::BSONObj bo;
-    typedef mongo::BSONObjBuilder bob;
-}
-
-namespace mongo {
+    typedef bson::BSONElement be;
+    typedef bson::BSONObj bo;
+    typedef bson::BSONObjBuilder bob;
 
     class OpTime;
     class BSONElement;
@@ -36,10 +33,12 @@ namespace mongo {
     int compareElementValues(const BSONElement& l, const BSONElement& r);
 
 
-    /** BSONElement represents an "element" in a BSONObj.  So for the object { a : 3, b : "abc" },
+    /** BSONElement represents an "element" in a BSONObj.
+        So for the object { a : 3, b : "abc" },
         'a : 3' is the first element (key+value).
 
-        The BSONElement object points into the BSONObj's data.  Thus the BSONObj must stay in scope
+        The BSONElement object points into the BSONObj's data.
+        Thus the BSONObj must stay in scope
         for the life of the BSONElement.
 
         internals:
@@ -51,26 +50,28 @@ namespace mongo {
     */
     class BSONElement {
     public:
-        /** These functions, which start with a capital letter, throw a UserException if the
-            element is not of the required type. Example:
+        /** These functions, which start with a capital letter, throw a
+            UserException if the element is not of the required type. Example:
 
-            string foo = obj["foo"].String(); // exception if not a string type or DNE
+            string foo = obj["foo"].String();
+            // exception if not a string type or DNE
         */
-        string String()             const { return chk(mongo::String).valuestr(); }
-        Date_t Date()               const { return chk(mongo::Date).date(); }
-        double Number()             const { return chk(isNumber()).number(); }
-        double Double()             const { return chk(NumberDouble)._numberDouble(); }
-        long long Long()            const { return chk(NumberLong)._numberLong(); }
-        int Int()                   const { return chk(NumberInt)._numberInt(); }
-        bool Bool()                 const { return chk(mongo::Bool).boolean(); }
-        BSONObj Obj()               const;
-        vector<BSONElement> Array() const; // see implementation for detailed comments
-        mongo::OID OID()            const { return chk(jstOID).__oid(); }
-        void Null()                 const { chk(isNull()); }
-        void OK()                   const { chk(ok()); }
+        string String() const { return chk(bson::String).valuestr(); }
+        Date_t Date() const { return chk(bson::Date).date(); }
+        double Number() const { return chk(isNumber()).number(); }
+        double Double() const { return chk(NumberDouble)._numberDouble(); }
+        long long Long() const { return chk(NumberLong)._numberLong(); }
+        int Int() const { return chk(NumberInt)._numberInt(); }
+        bool Bool() const { return chk(bson::Bool).boolean(); }
+        BSONObj Obj() const;
+        vector<BSONElement> Array() const;
+          // see implementation for detailed comments
+        mongo::OID OID() const { return chk(jstOID).__oid(); }
+        void Null() const { chk(isNull()); }
+        void OK() const { chk(ok()); }
 
-        /** populate v with the value of the element.  If type does not match, throw exception.
-            useful in templates -- see also BSONObj::Vals().
+        /** populate v with the value of the element.  If type does not match,
+            throw exception. useful in templates -- see also BSONObj::Vals().
         */
         void Val(Date_t& v)         const { v = Date(); }
         void Val(long long& v)      const { v = Long(); }
@@ -87,8 +88,10 @@ namespace mongo {
         bool ok() const { return !eoo(); }
 
         string toString( bool includeFieldName = true, bool full=false) const;
-        void toString(StringBuilder& s, bool includeFieldName = true, bool full=false) const;
-        string jsonString( JsonStringFormat format, bool includeFieldNames = true, int pretty = 0 ) const;
+        void toString(StringBuilder& s, bool includeFieldName = true,
+          bool full=false) const;
+        string jsonString( JsonStringFormat format,
+          bool includeFieldNames = true, int pretty = 0 ) const;
         operator string() const { return toString(); }
 
         /** Returns the type of the element */
@@ -99,19 +102,23 @@ namespace mongo {
         */
         BSONElement operator[] (const string& field) const;
 
-        /** returns the tyoe of the element fixed for the main type
-            the main purpose is numbers.  any numeric type will return NumberDouble
-            Note: if the order changes, indexes have to be re-built or than can be corruption
+        /** returns the type of the element fixed for the main type
+            the main purpose is numbers.  any numeric type will return
+            NumberDouble
+
+            Note: if the order changes, indexes have to be re-built or than can
+            be corruption
         */
         int canonicalType() const;
 
-        /** Indicates if it is the end-of-object element, which is present at the end of
-            every BSON object.
+        /** Indicates if it is the end-of-object element, which is present at
+            the end of every BSON object.
         */
         bool eoo() const { return type() == EOO; }
 
         /** Size of the element.
-            @param maxLen If maxLen is specified, don't scan more than maxLen bytes to calculate size.
+            @param maxLen If maxLen is specified, don't scan more than maxLen
+            bytes to calculate size.
         */
         int size( int maxLen = -1 ) const;
 
@@ -139,7 +146,7 @@ namespace mongo {
             return size() - fieldNameSize() - 1;
         }
 
-        bool isBoolean() const { return type() == mongo::Bool; }
+        bool isBoolean() const { return type() == bson::Bool; }
 
         /** @return value of a boolean element.
             You must assure element is a boolean before
@@ -155,7 +162,8 @@ namespace mongo {
             return *reinterpret_cast< const Date_t* >( value() );
         }
 
-        /** Convert the value to boolean, regardless of its type, in a javascript-like fashion
+        /** Convert the value to boolean, regardless of its type, in a
+            javascript-like fashion
             (i.e., treat zero and null as false).
         */
         bool trueValue() const;
@@ -167,28 +175,38 @@ namespace mongo {
         bool isNumber() const;
 
         /** Return double value for this field. MUST be NumberDouble type. */
-        double _numberDouble() const {return *reinterpret_cast< const double* >( value() ); }
+        double _numberDouble() const
+          {return *reinterpret_cast< const double* >( value() ); }
         /** Return double value for this field. MUST be NumberInt type. */
-        int _numberInt() const {return *reinterpret_cast< const int* >( value() ); }
+        int _numberInt() const
+          {return *reinterpret_cast< const int* >( value() ); }
         /** Return double value for this field. MUST be NumberLong type. */
-        long long _numberLong() const {return *reinterpret_cast< const long long* >( value() ); }
+        long long _numberLong() const
+          {return *reinterpret_cast< const long long* >( value() ); }
 
-        /** Retrieve int value for the element safely.  Zero returned if not a number. */
+        /** Retrieve int value for the element safely.
+            Zero returned if not a number. */
         int numberInt() const;
-        /** Retrieve long value for the element safely.  Zero returned if not a number. */
+        /** Retrieve long value for the element safely.
+            Zero returned if not a number. */
         long long numberLong() const;
-        /** Retrieve the numeric value of the element.  If not of a numeric type, returns 0.
-            Note: casts to double, data loss may occur with large (>52 bit) NumberLong values.
+        /** Retrieve the numeric value of the element.
+            If not of a numeric type, returns 0.
+            Note: casts to double, data loss may occur with large (>52 bit)
+            NumberLong values.
         */
         double numberDouble() const;
-        /** Retrieve the numeric value of the element.  If not of a numeric type, returns 0.
-            Note: casts to double, data loss may occur with large (>52 bit) NumberLong values.
+        /** Retrieve the numeric value of the element.
+            If not of a numeric type, returns 0.
+            Note: casts to double, data loss may occur with large (>52 bit)
+            NumberLong values.
         */
         double number() const { return numberDouble(); }
 
         /** Retrieve the object ID stored in the object.
             You must ensure the element is of type jstOID first. */
-        const mongo::OID &__oid() const { return *reinterpret_cast< const mongo::OID* >( value() ); }
+        const mongo::OID &__oid() const
+          { return *reinterpret_cast< const mongo::OID* >( value() ); }
 
         /** True if element is null. */
         bool isNull() const {
@@ -206,8 +224,9 @@ namespace mongo {
             return *reinterpret_cast< const int* >( value() );
         }
 
-        /** Get a string's value.  Also gives you start of the real data for an embedded object.
-            You must assure data is of an appropriate type first -- see also valuestrsafe().
+        /** Get a string's value.  Also gives you start of the real data for an
+            embedded object. You must assure data is of an appropriate type
+            first -- see also valuestrsafe().
         */
         const char * valuestr() const {
             return value() + 4;
@@ -215,11 +234,12 @@ namespace mongo {
 
         /** Get the string value of the element.  If not a string returns "". */
         const char *valuestrsafe() const {
-            return type() == mongo::String ? valuestr() : "";
+            return type() == bson::String ? valuestr() : "";
         }
         /** Get the string value of the element.  If not a string returns "". */
         string str() const {
-            return type() == mongo::String ? string(valuestr(), valuestrsize()-1) : string();
+            return type() == bson::String ?
+              string(valuestr(), valuestrsize()-1) : string();
         }
 
         /** Get javascript code of a CodeWScope data element. */
@@ -240,7 +260,8 @@ namespace mongo {
 
         BSONObj codeWScopeObject() const;
 
-        /** Get raw binary data.  Element must be of type BinData. Doesn't handle type 2 specially */
+        /** Get raw binary data.  Element must be of type BinData. Doesn't
+            handle type 2 specially */
         const char *binData(int& len) const {
             // BinData: <int len> <byte subtype> <byte[len] data>
             assert( type() == BinData );
@@ -296,7 +317,8 @@ namespace mongo {
             order by type, field name, and field value.
             If considerFieldName is true, pay attention to the field name.
         */
-        int woCompare( const BSONElement &e, bool considerFieldName = true ) const;
+        int woCompare( const BSONElement &e, bool considerFieldName = true )
+          const;
 
         const char * rawdata() const { return data; }
 
@@ -313,7 +335,7 @@ namespace mongo {
         bool mayEncapsulate() const {
             switch ( type() ) {
             case Object:
-            case mongo::Array:
+            case bson::Array:
             case CodeWScope:
                 return true;
             default:
@@ -325,7 +347,7 @@ namespace mongo {
         bool isABSONObj() const {
             switch( type() ) {
             case Object:
-            case mongo::Array:
+            case bson::Array:
                 return true;
             default:
                 return false;
@@ -392,13 +414,15 @@ namespace mongo {
         const BSONElement& chk(int t) const {
             if ( t != type() ) {
                 StringBuilder ss;
-                ss << "wrong type for BSONElement (" << fieldName() << ") " << type() << " != " << t;
+                ss << "wrong type for BSONElement (" << fieldName() << ") "
+                   << type() << " != " << t;
                 uasserted(13111, ss.str() );
             }
             return *this;
         }
         const BSONElement& chk(bool expr) const {
-            uassert(13118, "unexpected or missing type value in BSON object", expr);
+            uassert(13118, "unexpected or missing type value in BSON object",
+              expr);
             return *this;
         }
     };
@@ -419,20 +443,20 @@ namespace mongo {
         case NumberInt:
         case NumberLong:
             return 10;
-        case mongo::String:
+        case bson::String:
         case Symbol:
             return 15;
         case Object:
             return 20;
-        case mongo::Array:
+        case bson::Array:
             return 25;
         case BinData:
             return 30;
         case jstOID:
             return 35;
-        case mongo::Bool:
+        case bson::Bool:
             return 40;
-        case mongo::Date:
+        case bson::Date:
         case Timestamp:
             return 45;
         case RegEx:
@@ -457,7 +481,7 @@ namespace mongo {
             return *reinterpret_cast< const double* >( value() ) != 0;
         case NumberInt:
             return *reinterpret_cast< const int* >( value() ) != 0;
-        case mongo::Bool:
+        case bson::Bool:
             return boolean();
         case EOO:
         case jstNULL:
@@ -487,9 +511,9 @@ namespace mongo {
         case NumberLong:
         case NumberDouble:
         case NumberInt:
-        case mongo::String:
-        case mongo::Bool:
-        case mongo::Date:
+        case bson::String:
+        case bson::Bool:
+        case bson::Date:
         case jstOID:
             return true;
         default:
@@ -510,7 +534,8 @@ namespace mongo {
         }
     }
 
-    /** Retrieve int value for the element safely.  Zero returned if not a number. Converted to int if another numeric type. */
+    /** Retrieve int value for the element safely.  Zero returned if not a
+        number. Converted to int if another numeric type. */
     inline int BSONElement::numberInt() const {
         switch( type() ) {
         case NumberDouble:
@@ -524,7 +549,8 @@ namespace mongo {
         }
     }
 
-    /** Retrieve long value for the element safely.  Zero returned if not a number. */
+    /** Retrieve long value for the element safely.  Zero returned if not a
+        number. */
     inline long long BSONElement::numberLong() const {
         switch( type() ) {
         case NumberDouble:
