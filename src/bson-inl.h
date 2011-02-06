@@ -22,7 +22,7 @@
 #include "util/misc.h"
 #include "../util/hex.h"
 
-namespace mongo {
+namespace bson {
 
     inline BSONObjIterator BSONObj::begin() {
         return BSONObjIterator(*this);
@@ -51,7 +51,7 @@ namespace mongo {
     inline NOINLINE_DECL void BSONObj::_assertInvalid() const {
         StringBuilder ss;
         int os = objsize();
-        ss << "Invalid BSONObj size: " << os << " (0x" << toHex( &os, 4 ) << ')';
+        ss << "Invalid BSONObj size: " << os << " (0x" << toHex( &os, 4 ) <<')';
         try {
             BSONElement e = firstElement();
             ss << " first element: " << e.toString();
@@ -121,7 +121,8 @@ namespace mongo {
         return *this;
     }
 
-    /* add all the fields from the object specified to this object if they don't exist */
+    /* add all the fields from the object specified to this object if they don't
+       exist */
     inline BSONObjBuilder& BSONObjBuilder::appendElementsUnique(BSONObj x) {
         set<string> have;
         {
@@ -129,7 +130,7 @@ namespace mongo {
             while ( i.more() )
                 have.insert( i.next().fieldName() );
         }
-        
+
         BSONObjIterator it(x);
         while ( it.more() ) {
             BSONElement e = it.next();
@@ -155,7 +156,8 @@ namespace mongo {
         return false;
     }
 
-    inline BSONObjBuilderValueStream::BSONObjBuilderValueStream( BSONObjBuilder * builder ) {
+    inline BSONObjBuilderValueStream::BSONObjBuilderValueStream(
+      BSONObjBuilder * builder ) {
         _fieldName = 0;
         _builder = builder;
     }
@@ -167,17 +169,19 @@ namespace mongo {
         return *_builder;
     }
 
-    inline BSONObjBuilder& BSONObjBuilderValueStream::operator<<( const BSONElement& e ) {
+    inline BSONObjBuilder& BSONObjBuilderValueStream::operator<<(
+      const BSONElement& e ) {
         _builder->appendAs( e , _fieldName );
         _fieldName = 0;
         return *_builder;
     }
 
-    inline Labeler BSONObjBuilderValueStream::operator<<( const Labeler::Label &l ) {
+    inline Labeler BSONObjBuilderValueStream::operator<<(
+      const Labeler::Label &l ) {
         return Labeler( l, this );
     }
 
-    inline void BSONObjBuilderValueStream::endField( const char *nextFieldName ) {
+    inline void BSONObjBuilderValueStream::endField(const char *nextFieldName) {
         if ( _fieldName && haveSubobj() ) {
             _builder->append( _fieldName, subobj()->done() );
         }
@@ -204,7 +208,8 @@ namespace mongo {
     }
 
     // {a: {b:1}} -> {a.b:1}
-    void nested2dotted(BSONObjBuilder& b, const BSONObj& obj, const string& base="");
+    void nested2dotted(BSONObjBuilder& b, const BSONObj& obj, const string&
+      base="");
     inline BSONObj nested2dotted(const BSONObj& obj) {
         BSONObjBuilder b;
         nested2dotted(b, obj);
@@ -270,7 +275,8 @@ namespace mongo {
         toString(s, isArray, full);
         return s.str();
     }
-    inline void BSONObj::toString(StringBuilder& s,  bool isArray, bool full ) const {
+    inline void BSONObj::toString(StringBuilder& s,  bool isArray, bool full )
+      const {
         if ( isEmpty() ) {
             s << "{}";
             return;
@@ -302,8 +308,6 @@ namespace mongo {
         s << ( isArray ? " ]" : " }" );
     }
 
-    extern unsigned getRandomNumber();
-
     inline void BSONElement::validate() const {
         const BSONType t = type();
 
@@ -311,7 +315,7 @@ namespace mongo {
         case DBRef:
         case Code:
         case Symbol:
-        case mongo::String: {
+        case bson::String: {
             unsigned x = (unsigned) valuestrsize();
             bool lenOk = x > 0 && x < (unsigned) BSONObjMaxInternalSize;
             if( lenOk && valuestr()[x-1] == 0 )
@@ -319,7 +323,7 @@ namespace mongo {
             StringBuilder buf;
             buf <<  "Invalid dbref/code/string/symbol size: " << x;
             if( lenOk )
-                buf << " strnlen:" << mongo::strnlen( valuestr() , x );
+                buf << " strnlen:" << bson::strnlen( valuestr() , x );
             msgasserted( 10321 , buf.str() );
             break;
         }
@@ -327,13 +331,17 @@ namespace mongo {
             int totalSize = *( int * )( value() );
             massert( 10322 ,  "Invalid CodeWScope size", totalSize >= 8 );
             int strSizeWNull = *( int * )( value() + 4 );
-            massert( 10323 ,  "Invalid CodeWScope string size", totalSize >= strSizeWNull + 4 + 4 );
+            massert( 10323 ,  "Invalid CodeWScope string size",
+              totalSize >= strSizeWNull + 4 + 4 );
             massert( 10324 ,  "Invalid CodeWScope string size",
                      strSizeWNull > 0 &&
-                     (strSizeWNull - 1) == mongo::strnlen( codeWScopeCode(), strSizeWNull ) );
-            massert( 10325 ,  "Invalid CodeWScope size", totalSize >= strSizeWNull + 4 + 4 + 4 );
+                     (strSizeWNull - 1) ==
+                      bson::strnlen( codeWScopeCode(), strSizeWNull ) );
+            massert( 10325 ,  "Invalid CodeWScope size",
+              totalSize >= strSizeWNull + 4 + 4 + 4 );
             int objSize = *( int * )( value() + 4 + 4 + strSizeWNull );
-            massert( 10326 ,  "Invalid CodeWScope object size", totalSize == 4 + 4 + strSizeWNull + objSize );
+            massert( 10326 ,  "Invalid CodeWScope object size",
+              totalSize == 4 + 4 + strSizeWNull + objSize );
             // Subobject validation handled elsewhere.
         }
         case Object:
@@ -357,14 +365,14 @@ namespace mongo {
         case MaxKey:
         case MinKey:
             break;
-        case mongo::Bool:
+        case bson::Bool:
             x = 1;
             break;
         case NumberInt:
             x = 4;
             break;
         case Timestamp:
-        case mongo::Date:
+        case bson::Date:
         case NumberDouble:
         case NumberLong:
             x = 8;
@@ -374,32 +382,39 @@ namespace mongo {
             break;
         case Symbol:
         case Code:
-        case mongo::String:
-            massert( 10313 ,  "Insufficient bytes to calculate element size", maxLen == -1 || remain > 3 );
+        case bson::String:
+            massert( 10313 ,  "Insufficient bytes to calculate element size",
+              maxLen == -1 || remain > 3 );
             x = valuestrsize() + 4;
             break;
         case CodeWScope:
-            massert( 10314 ,  "Insufficient bytes to calculate element size", maxLen == -1 || remain > 3 );
+            massert( 10314 ,  "Insufficient bytes to calculate element size",
+              maxLen == -1 || remain > 3 );
             x = objsize();
             break;
 
         case DBRef:
-            massert( 10315 ,  "Insufficient bytes to calculate element size", maxLen == -1 || remain > 3 );
+            massert( 10315 ,  "Insufficient bytes to calculate element size",
+              maxLen == -1 || remain > 3 );
             x = valuestrsize() + 4 + 12;
             break;
         case Object:
-        case mongo::Array:
-            massert( 10316 ,  "Insufficient bytes to calculate element size", maxLen == -1 || remain > 3 );
+        case bson::Array:
+            massert( 10316 ,  "Insufficient bytes to calculate element size",
+              maxLen == -1 || remain > 3 );
             x = objsize();
             break;
         case BinData:
-            massert( 10317 ,  "Insufficient bytes to calculate element size", maxLen == -1 || remain > 3 );
+            massert( 10317 ,  "Insufficient bytes to calculate element size",
+              maxLen == -1 || remain > 3 );
             x = valuestrsize() + 4 + 1/*subtype*/;
             break;
         case RegEx: {
             const char *p = value();
-            size_t len1 = ( maxLen == -1 ) ? strlen( p ) : mongo::strnlen( p, remain );
-            //massert( 10318 ,  "Invalid regex string", len1 != -1 ); // ERH - 4/28/10 - don't think this does anything
+            size_t len1 = ( maxLen == -1 ) ? strlen( p ) : bson::strnlen( p,
+              remain );
+            //massert( 10318 ,  "Invalid regex string", len1 != -1 );
+            // ERH - 4/28/10 - don't think this does anything
             p = p + len1 + 1;
             size_t len2;
             if( maxLen == -1 )
@@ -407,9 +422,10 @@ namespace mongo {
             else {
                 size_t x = remain - len1 - 1;
                 assert( x <= 0x7fffffff );
-                len2 = mongo::strnlen( p, (int) x );
+                len2 = bson::strnlen( p, (int) x );
             }
-            //massert( 10319 ,  "Invalid regex options string", len2 != -1 ); // ERH - 4/28/10 - don't think this does anything
+            //massert( 10319 ,  "Invalid regex options string", len2 != -1 );
+            // ERH - 4/28/10 - don't think this does anything
             x = (int) (len1 + 1 + len2 + 1);
         }
         break;
@@ -425,19 +441,21 @@ namespace mongo {
         return totalSize;
     }
 
-    inline string BSONElement::toString( bool includeFieldName, bool full ) const {
+    inline string BSONElement::toString( bool includeFieldName, bool full )
+      const {
         StringBuilder s;
         toString(s, includeFieldName, full);
         return s.str();
     }
-    inline void BSONElement::toString(StringBuilder& s, bool includeFieldName, bool full ) const {
+    inline void BSONElement::toString(StringBuilder& s, bool includeFieldName,
+      bool full ) const {
         if ( includeFieldName && type() != EOO )
             s << fieldName() << ": ";
         switch ( type() ) {
         case EOO:
             s << "EOO";
             break;
-        case mongo::Date:
+        case bson::Date:
             s << "new Date(" << date() << ')';
             break;
         case RegEx: {
@@ -455,13 +473,13 @@ namespace mongo {
         case NumberInt:
             s << _numberInt();
             break;
-        case mongo::Bool:
+        case bson::Bool:
             s << ( boolean() ? "true" : "false" );
             break;
         case Object:
             embeddedObject().toString(s, false, full);
             break;
-        case mongo::Array:
+        case bson::Array:
             embeddedObject().toString(s, true, full);
             break;
         case Undefined:
@@ -478,7 +496,8 @@ namespace mongo {
             break;
         case CodeWScope:
             s << "CodeWScope( "
-              << codeWScopeCode() << ", " << codeWScopeObject().toString(false, full) << ")";
+              << codeWScopeCode() << ", "
+              << codeWScopeObject().toString(false, full) << ")";
             break;
         case Code:
             if ( !full &&  valuestrsize() > 80 ) {
@@ -490,7 +509,7 @@ namespace mongo {
             }
             break;
         case Symbol:
-        case mongo::String:
+        case bson::String:
             s << '"';
             if ( !full &&  valuestrsize() > 80 ) {
                 s.write(valuestr(), 70);
@@ -565,9 +584,10 @@ namespace mongo {
     }
 
     inline BSONObj::BSONObj() {
-        /* little endian ordering here, but perhaps that is ok regardless as BSON is spec'd
-           to be little endian external to the system. (i.e. the rest of the implementation of bson,
-           not this part, fails to support big endian)
+        /* little endian ordering here, but perhaps that is ok regardless as
+           BSON is spec'd to be little endian external to the system. (i.e. the
+           rest of the implementation of bson, not this part, fails to support
+           big endian)
         */
         static char p[] = { /*size*/5, 0, 0, 0, /*eoo*/0 };
         _objdata = p;
@@ -657,7 +677,8 @@ namespace mongo {
     inline void BSONElement::Val(BSONObj& v) const { v = Obj(); }
 
     template<typename T>
-    inline BSONFieldValue<BSONObj> BSONField<T>::query( const char * q , const T& t ) const {
+    inline BSONFieldValue<BSONObj> BSONField<T>::query( const char * q ,
+      const T& t ) const {
         BSONObjBuilder b;
         b.append( q , t );
         return BSONFieldValue<BSONObj>( _name , b.obj() );
