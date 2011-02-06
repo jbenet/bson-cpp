@@ -87,11 +87,11 @@ namespace bson {
 #endif
 }
 
-#include "../bson/bsontypes.h"
-#include "../bson/oid.h"
-#include "../bson/bsonelement.h"
-#include "../bson/bsonobj.h"
-#include "../bson/bsonmisc.h"
-#include "../bson/bsonobjbuilder.h"
-#include "../bson/bsonobjiterator.h"
-#include "../bson/bson-inl.h"
+#include "bsontypes.h"
+#include "oid.h"
+#include "bsonelement.h"
+#include "bsonobj.h"
+#include "bsonmisc.h"
+#include "bsonobjbuilder.h"
+#include "bsonobjiterator.h"
+#include "bson-inl.h"
