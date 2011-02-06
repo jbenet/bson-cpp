@@ -19,12 +19,12 @@
 
 #include <boost/preprocessor/cat.hpp> // like the ## operator but works with __LINE__
 
-namespace mongo {
+namespace bson {
 
     /** iterator for a BSONObj
 
-       Note each BSONObj ends with an EOO element: so you will get more() on an empty
-       object, although next().eoo() will be true.
+       Note each BSONObj ends with an EOO element: so you will get more() on an
+       empty object, although next().eoo() will be true.
 
        todo: we may want to make a more stl-like iterator interface for this
              with things like begin() and end()
@@ -51,10 +51,12 @@ namespace mongo {
         /** @return true if more elements exist to be enumerated. */
         bool more() { return _pos < _theend && _pos[0]; }
 
-        /** @return true if more elements exist to be enumerated INCLUDING the EOO element which is always at the end. */
+        /** @return true if more elements exist to be enumerated INCLUDING the
+            EOO element which is always at the end. */
         bool moreWithEOO() { return _pos < _theend; }
 
-        /** @return the next element in the object. For the final element, element.eoo() will be true. */
+        /** @return the next element in the object. For the final element,
+            element.eoo() will be true. */
         BSONElement next( bool checkEnd = false ) {
             assert( _pos < _theend );
             BSONElement e( _pos, checkEnd ? (int)(_theend - _pos) : -1 );
@@ -104,8 +106,8 @@ namespace mongo {
 
     /** Similar to BOOST_FOREACH
      *
-     *  because the iterator is defined outside of the for, you must use {} around
-     *  the surrounding scope. Don't do this:
+     *  because the iterator is defined outside of the for, you must use {}
+     *  around the surrounding scope. Don't do this:
      *
      *  if (foo)
      *      BSONForEach(e, obj)
