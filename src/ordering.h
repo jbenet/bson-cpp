@@ -17,12 +17,13 @@
 
 #pragma once
 
-namespace mongo {
+namespace bson {
 
     /** A precomputation of a BSON key pattern.
-        The constructor is private to make conversion more explicit so we notice where we call make().
-        Over time we should push this up higher and higher.
-        */
+        The constructor is private to make conversion more explicit so we notice
+        where we call make(). Over time we should push this up higher and
+        higher.
+    */
     class Ordering {
         const unsigned bits;
         const unsigned nkeys;
