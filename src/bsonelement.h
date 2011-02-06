@@ -20,6 +20,7 @@
 #include <vector>
 #include <string.h>
 #include "util/builder.h"
+#include "oid.h"
 
 namespace bson {
     typedef bson::BSONElement be;
@@ -66,7 +67,7 @@ namespace bson {
         BSONObj Obj() const;
         vector<BSONElement> Array() const;
           // see implementation for detailed comments
-        mongo::OID OID() const { return chk(jstOID).__oid(); }
+        bson::OID OID() const { return chk(jstOID).__oid(); }
         void Null() const { chk(isNull()); }
         void OK() const { chk(ok()); }
 
@@ -77,7 +78,7 @@ namespace bson {
         void Val(long long& v)      const { v = Long(); }
         void Val(bool& v)           const { v = Bool(); }
         void Val(BSONObj& v)        const;
-        void Val(mongo::OID& v)     const { v = OID(); }
+        void Val(bson::OID& v)     const { v = OID(); }
         void Val(int& v)            const { v = Int(); }
         void Val(double& v)         const { v = Double(); }
         void Val(string& v)         const { v = String(); }
@@ -205,8 +206,8 @@ namespace bson {
 
         /** Retrieve the object ID stored in the object.
             You must ensure the element is of type jstOID first. */
-        const mongo::OID &__oid() const
-          { return *reinterpret_cast< const mongo::OID* >( value() ); }
+        const bson::OID &__oid() const
+          { return *reinterpret_cast< const bson::OID* >( value() ); }
 
         /** True if element is null. */
         bool isNull() const {
@@ -367,11 +368,11 @@ namespace bson {
             return value() + 4;
         }
 
-        const mongo::OID& dbrefOID() const {
+        const bson::OID& dbrefOID() const {
             uassert( 10064 ,  "not a dbref" , type() == DBRef );
             const char * start = value();
             start += 4 + *reinterpret_cast< const int* >( start );
-            return *reinterpret_cast< const mongo::OID* >( start );
+            return *reinterpret_cast< const bson::OID* >( start );
         }
 
         bool operator<( const BSONElement& other ) const {

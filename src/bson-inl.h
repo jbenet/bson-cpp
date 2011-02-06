@@ -18,9 +18,9 @@
 #pragma once
 
 #include <map>
-#include "util/atomic_int.h"
+#include "lib/atomic_int.h"
 #include "util/misc.h"
-#include "../util/hex.h"
+#include "util/hex.h"
 
 namespace bson {
 
@@ -51,7 +51,8 @@ namespace bson {
     inline NOINLINE_DECL void BSONObj::_assertInvalid() const {
         StringBuilder ss;
         int os = objsize();
-        ss << "Invalid BSONObj size: " << os << " (0x" << toHex( &os, 4 ) <<')';
+        ss << "Invalid BSONObj size: " << os << " (0x"
+           << toHex( &os, 4 ) << ')';
         try {
             BSONElement e = firstElement();
             ss << " first element: " << e.toString();
@@ -523,7 +524,7 @@ namespace bson {
         case DBRef:
             s << "DBRef('" << valuestr() << "',";
             {
-                mongo::OID *x = (mongo::OID *) (valuestr() + valuestrsize());
+                bson::OID *x = (bson::OID *) (valuestr() + valuestrsize());
                 s << *x << ')';
             }
             break;
@@ -536,7 +537,8 @@ namespace bson {
             if (full) {
                 int len;
                 const char* data = binDataClean(len);
-                s << '(' << binDataType() << ", " << toHex(data, len) << ')';
+                s << '(' << binDataType() << ", "
+                  << toHex(data, len) << ')';
             }
             break;
         case Timestamp:

@@ -19,6 +19,8 @@
 
 #include "framework.h"
 
+using namespace bson;
+
 namespace test_bsonobj {
     class BufBuilderBasic {
     public:

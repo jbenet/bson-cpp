@@ -34,13 +34,13 @@
 
 namespace po = boost::program_options;
 
-namespace mongo {
+namespace bson {
 
     CmdLine cmdLine;
 
     namespace regression {
 
-        map<string,Suite*> * mongo::regression::Suite::_suites = 0;
+        map<string,Suite*> * bson::regression::Suite::_suites = 0;
 
         class Result {
         public:

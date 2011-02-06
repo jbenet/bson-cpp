@@ -21,27 +21,30 @@
   simple portable regression system
  */
 
-#include "../pch.h"
-
 #define ASSERT_EXCEPTION(a,b)                                       \
     try {                                                           \
         a;                                                          \
-        mongo::regression::assert_fail( #a , __FILE__ , __LINE__ ); \
+        bson::regression::assert_fail( #a , __FILE__ , __LINE__ ); \
     } catch ( b& ){                                               \
-        mongo::regression::assert_pass();                           \
+        bson::regression::assert_pass();                           \
     }
 
 
 
-#define ASSERT_EQUALS(a,b) (mongo::regression::MyAsserts( #a , #b , __FILE__ , __LINE__ ) ).ae( (a) , (b) )
-#define ASSERT_NOT_EQUALS(a,b) (mongo::regression::MyAsserts( #a , #b , __FILE__ , __LINE__ ) ).nae( (a) , (b) )
+#define ASSERT_EQUALS(a,b) (bson::regression::MyAsserts( #a , #b , __FILE__ , __LINE__ ) ).ae( (a) , (b) )
+#define ASSERT_NOT_EQUALS(a,b) (bson::regression::MyAsserts( #a , #b , __FILE__ , __LINE__ ) ).nae( (a) , (b) )
 
-#define ASSERT(x) (void)( (!(!(x))) ? mongo::regression::assert_pass() : mongo::regression::assert_fail( #x , __FILE__ , __LINE__ ) )
-#define FAIL(x) mongo::regression::fail( #x , __FILE__ , __LINE__ )
+#define ASSERT(x) (void)( (!(!(x))) ? bson::regression::assert_pass() : bson::regression::assert_fail( #x , __FILE__ , __LINE__ ) )
+#define FAIL(x) bson::regression::fail( #x , __FILE__ , __LINE__ )
 
-#include "../db/instance.h"
+#import "bson.h"
 
-namespace mongo {
+#ifndef _WIN32
+#include <cxxabi.h>
+#endif
+
+
+namespace bson {
 
     namespace regression {
 
@@ -51,7 +54,7 @@ namespace mongo {
         public:
             virtual ~TestCase() {}
             virtual void run() = 0;
-            virtual string getName() = 0;
+            virtual bson::string getName() = 0;
         };
 
         template< class T >
@@ -65,8 +68,26 @@ namespace mongo {
                 t->run();
             }
             virtual T * create() = 0;
-            virtual string getName() {
+            virtual bson::string getName() {
                 return demangleName( typeid(T) );
+            }
+
+            bson::string demangleName( const type_info& typeinfo ) {
+              #ifdef _WIN32
+                return typeinfo.name();
+              #else
+                int status;
+
+                char *niceName =
+                  abi::__cxa_demangle(typeinfo.name(), 0, 0, &status);
+
+                if ( ! niceName )
+                    return typeinfo.name();
+
+                string s = niceName;
+                free(niceName);
+                return s;
+              #endif
             }
         };
 
@@ -90,15 +111,13 @@ namespace mongo {
 
         class Suite {
         public:
-            Suite( string name ) : _name( name ) {
+            Suite( bson::string name ) : _name( name ) {
                 registerSuite( name , this );
                 _ran = 0;
             }
 
             virtual ~Suite() {
                 if ( _ran ) {
-                    DBDirectClient c;
-                    c.dropDatabase( "unittests" );
                 }
             }
 
@@ -112,23 +131,23 @@ namespace mongo {
                 _tests.push_back( new TestHolder1<T,A>(a) );
             }
 
-            Result * run( const string& filter );
+            Result * run( const bson::string& filter );
 
-            static int run( vector<string> suites , const string& filter );
-            static int run( int argc , char ** argv , string default_dbpath );
+            static int run( vector<bson::string> suites , const string& filter );
+            static int run( int argc , char ** argv , bson::string default_dbpath );
 
 
         protected:
             virtual void setupTests() = 0;
 
         private:
-            string _name;
+            bson::string _name;
             list<TestCase*> _tests;
             bool _ran;
 
-            static map<string,Suite*> * _suites;
+            static map<bson::string,Suite*> * _suites;
 
-            void registerSuite( string name , Suite * s );
+            void registerSuite( bson::string name , Suite * s );
         };
 
         void assert_pass();
@@ -162,7 +181,7 @@ namespace mongo {
 
                 MyAssertionException * e = getBase();
                 e->ss << a << " != " << b << endl;
-                log() << e->ss.str() << endl;
+                e->ss << e->ss.str() << endl;
                 throw e;
             }
 
@@ -176,7 +195,7 @@ namespace mongo {
 
                 MyAssertionException * e = getBase();
                 e->ss << a << " == " << b << endl;
-                log() << e->ss.str() << endl;
+                e->ss << e->ss.str() << endl;
                 throw e;
             }
 
@@ -189,9 +208,9 @@ namespace mongo {
 
             MyAssertionException * getBase();
 
-            string _aexp;
-            string _bexp;
-            string _file;
+            bson::string _aexp;
+            bson::string _bexp;
+            bson::string _file;
             unsigned _line;
         };
 

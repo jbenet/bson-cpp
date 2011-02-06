@@ -17,9 +17,9 @@
 
 #pragma once
 
-#include "../util/hex.h"
+#include "util/hex.h"
 
-namespace mongo {
+namespace bson {
 
 #pragma pack(1)
     /** Object ID type.

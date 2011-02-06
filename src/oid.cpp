@@ -15,12 +15,11 @@
  *    limitations under the License.
  */
 
-#include "pch.h"
 #include "oid.h"
-#include "util/atomic_int.h"
+#include "lib/atomic_int.h"
 #include "../db/nonce.h"
 
-BOOST_STATIC_ASSERT( sizeof(mongo::OID) == 12 );
+BOOST_STATIC_ASSERT( sizeof(OID) == 12 );
 
 namespace mongo {
 
@@ -49,7 +48,7 @@ namespace mongo {
     }
 
     OID::MachineAndPid OID::genMachineAndPid() {
-        BOOST_STATIC_ASSERT( sizeof(mongo::OID::MachineAndPid) == 5 );
+        BOOST_STATIC_ASSERT( sizeof(OID::MachineAndPid) == 5 );
 
         // this is not called often, so the following is not expensive, and
         // gives us some testing that nonce generation is working right and that

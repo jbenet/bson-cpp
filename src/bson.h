@@ -44,7 +44,7 @@ namespace bson {
     public:
         assertion( unsigned u , const string& s )
             : id( u ) , msg( s ) {
-            mongo::StringBuilder ss;
+            bson::StringBuilder ss;
             ss << "BsonAssertion id: " << u << " " << s;
             full = ss.str();
         }
