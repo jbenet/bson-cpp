@@ -19,10 +19,7 @@
 
 #include "util/misc.h"
 
-namespace bson { }
-
-namespace mongo {
-
+namespace bson {
     using namespace std;
 
     class BSONArrayBuilder;
