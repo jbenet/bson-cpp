@@ -23,7 +23,7 @@
 #include "util/builder.h"
 #include "stringdata.h"
 
-namespace mongo {
+namespace bson {
 
     typedef set< BSONElement, BSONElementCmpWithoutField > BSONElementSet;
 
@@ -33,10 +33,10 @@ namespace mongo {
 
        See bsonspec.org.
 
-       Note that BSONObj's have a smart pointer capability built in -- so you can
-       pass them around by value.  The reference counts used to implement this
-       do not use locking, so copying and destroying BSONObj's are not thread-safe
-       operations.
+       Note that BSONObj's have a smart pointer capability built in -- so you
+       can pass them around by value.  The reference counts used to implement
+       this do not use locking, so copying and destroying BSONObj's are not
+       thread-safe operations.
 
      BSON object format:
 
@@ -55,10 +55,12 @@ namespace mongo {
      String:    <unsigned32 strsizewithnull><cstring>
      Date:      <8bytes>
      Regex:     <cstring regex><cstring options>
-     Object:    a nested object, leading with its entire size, which terminates with EOO.
+     Object:    a nested object, leading with its entire size, which terminates
+                with EOO.
      Array:     same as object
      DBRef:     <strlen> <cstring ns> <oid>
-     DBRef:     a database reference: basically a collection name plus an Object ID
+     DBRef:     a database reference: basically a collection name plus an Object
+                ID
      BinData:   <int len> <byte subtype> <byte[len] data>
      Code:      a function (not a closure): same format as String.
      Symbol:    a language symbol (say a python symbol).  same format as String.
@@ -87,48 +89,60 @@ namespace mongo {
            A BSONObj can use a buffer it "owns" or one it does not.
 
            OWNED CASE
-           If the BSONObj owns the buffer, the buffer can be shared among several BSONObj's (by assignment).
+           If the BSONObj owns the buffer, the buffer can be shared among
+           several BSONObj's (by assignment).
            In this case the buffer is basically implemented as a shared_ptr.
            Since BSONObj's are typically immutable, this works well.
 
            UNOWNED CASE
-           A BSONObj can also point to BSON data in some other data structure it does not "own" or free later.
-           For example, in a memory mapped file.  In this case, it is important the original data stays in
-           scope for as long as the BSONObj is in use.  If you think the original data may go out of scope,
-           call BSONObj::getOwned() to promote your BSONObj to having its own copy.
+           A BSONObj can also point to BSON data in some other data structure it
+           does not "own" or free later. For example, in a memory mapped file.
+           In this case, it is important the original data stays in scope for as
+           long as the BSONObj is in use.  If you think the original data may go
+           out of scope, call BSONObj::getOwned() to promote your BSONObj to
+           having its own copy.
 
-           On a BSONObj assignment, if the source is unowned, both the source and dest will have unowned
-           pointers to the original buffer after the assignment.
+           On a BSONObj assignment, if the source is unowned, both the source
+           and dest will have unowned pointers to the original buffer after the
+           assignment.
 
-           If you are not sure about ownership but need the buffer to last as long as the BSONObj, call
-           getOwned().  getOwned() is a no-op if the buffer is already owned.  If not already owned, a malloc
-           and memcpy will result.
+           If you are not sure about ownership but need the buffer to last as
+           long as the BSONObj, call getOwned().  getOwned() is a no-op if the
+           buffer is already owned.  If not already owned, a malloc and memcpy
+           will result.
 
-           Most ways to create BSONObj's create 'owned' variants.  Unowned versions can be created with:
+           Most ways to create BSONObj's create 'owned' variants.  Unowned
+           versions can be created with:
            (1) specifying true for the ifree parameter in the constructor
-           (2) calling BSONObjBuilder::done().  Use BSONObjBuilder::obj() to get an owned copy
-           (3) retrieving a subobject retrieves an unowned pointer into the parent BSON object
+           (2) calling BSONObjBuilder::done().  Use BSONObjBuilder::obj() to get
+               an owned copy
+           (3) retrieving a subobject retrieves an unowned pointer into the
+               parent BSON object
 
            @return true if this is in owned mode
         */
         bool isOwned() const { return _holder.get() != 0; }
 
-        /* make sure the data buffer is under the control of this BSONObj and not a remote buffer */
+        /* make sure the data buffer is under the control of this BSONObj and
+           not a remote buffer */
         BSONObj getOwned() const;
 
         /** @return a new full (and owned) copy of the object. */
         BSONObj copy() const;
 
-        /** Readable representation of a BSON object in an extended JSON-style notation.
-            This is an abbreviated representation which might be used for logging.
+        /** Readable representation of a BSON object in an extended JSON-style
+            notation. This is an abbreviated representation which might be used
+            for logging.
         */
         string toString( bool isArray = false, bool full=false ) const;
-        void toString(StringBuilder& s, bool isArray = false, bool full=false ) const;
+        void toString(StringBuilder& s, bool isArray = false, bool full=false )
+          const;
 
         /** Properly formatted JSON string.
             @param pretty if true we try to add some lf's and indentation
         */
-        string jsonString( JsonStringFormat format = Strict, int pretty = 0 ) const;
+        string jsonString( JsonStringFormat format = Strict, int pretty = 0 )
+          const;
 
         /** note: addFields always adds _id even if not specified */
         int addFields(BSONObj& from, set<string>& fields); /* returns n added */
@@ -138,7 +152,8 @@ namespace mongo {
         */
         int nFields() const;
 
-        /** adds the field names to the fields set.  does NOT clear it (appends). */
+        /** adds the field names to the fields set.  does NOT clear it
+            (appends). */
         int getFieldNames(set<string>& fields) const;
 
         /** return has eoo() true if no match
@@ -152,12 +167,14 @@ namespace mongo {
             return getFieldDotted( name.c_str() );
         }
 
-        /** Like getFieldDotted(), but expands multikey arrays and returns all matching objects
+        /** Like getFieldDotted(), but expands multikey arrays and returns all
+            matching objects
          */
-        void getFieldsDotted(const StringData& name, BSONElementSet &ret ) const;
-        /** Like getFieldDotted(), but returns first array encountered while traversing the
-            dotted fields of name.  The name variable is updated to represent field
-            names with respect to the returned element. */
+        void getFieldsDotted(const StringData& name, BSONElementSet &ret )
+          const;
+        /** Like getFieldDotted(), but returns first array encountered while
+            traversing the dotted fields of name.  The name variable is updated
+            to represent field names with respect to the returned element. */
         BSONElement getFieldDottedOrArray(const char *&name) const;
 
         /** Get the field of the specified name. eoo() is true on the returned
@@ -184,7 +201,8 @@ namespace mongo {
         }
 
         /** @return true if field exists */
-        bool hasField( const char * name ) const { return ! getField( name ).eoo(); }
+        bool hasField( const char * name ) const
+          { return ! getField( name ).eoo(); }
 
         /** @return "" if DNE or wrong type */
         const char * getStringField(const char *name) const;
@@ -210,18 +228,22 @@ namespace mongo {
             x and y elements of this object, if they are present.
            returns elements with original field names
         */
-        BSONObj extractFields(const BSONObj &pattern , bool fillWithNull=false) const;
+        BSONObj extractFields(const BSONObj &pattern , bool fillWithNull=false)
+          const;
 
-        BSONObj filterFieldsUndotted(const BSONObj &filter, bool inFilter) const;
+        BSONObj filterFieldsUndotted(const BSONObj &filter, bool inFilter)
+          const;
 
-        BSONElement getFieldUsingIndexNames(const char *fieldName, const BSONObj &indexKey) const;
+        BSONElement getFieldUsingIndexNames(const char *fieldName,
+          const BSONObj &indexKey) const;
 
         /** @return the raw data of the object */
         const char *objdata() const {
             return _objdata;
         }
         /** @return total size of the BSON object in bytes */
-        int objsize() const { return *(reinterpret_cast<const int*>(objdata())); }
+        int objsize() const
+          { return *(reinterpret_cast<const int*>(objdata())); }
 
         /** performs a cursory check on the object's size only. */
         bool isValid();
@@ -256,15 +278,21 @@ namespace mongo {
                       bool considerFieldName=true) const;
 
 
-        bool operator<( const BSONObj& other ) const { return woCompare( other ) < 0; }
-        bool operator<=( const BSONObj& other ) const { return woCompare( other ) <= 0; }
-        bool operator>( const BSONObj& other ) const { return woCompare( other ) > 0; }
-        bool operator>=( const BSONObj& other ) const { return woCompare( other ) >= 0; }
+        bool operator<( const BSONObj& other ) const
+          { return woCompare( other ) < 0; }
+        bool operator<=( const BSONObj& other ) const
+          { return woCompare( other ) <= 0; }
+        bool operator>( const BSONObj& other ) const
+          { return woCompare( other ) > 0; }
+        bool operator>=( const BSONObj& other ) const
+          { return woCompare( other ) >= 0; }
 
         /**
-         * @param useDotted whether to treat sort key fields as possibly dotted and expand into them
+         * @param useDotted whether to treat sort key fields as possibly dotted
+            and expand into them
          */
-        int woSortOrder( const BSONObj& r , const BSONObj& sortKey , bool useDotted=false ) const;
+        int woSortOrder( const BSONObj& r , const BSONObj& sortKey ,
+          bool useDotted=false ) const;
 
         /** This is "shallow equality" -- ints and doubles won't match.  for a
            deep equality test use woCompare (which is slower).
@@ -283,9 +311,9 @@ namespace mongo {
         /** @return true if field exists in the object */
         bool hasElement(const char *name) const;
 
-        /** Get the _id field from the object.  For good performance drivers should
-            assure that _id is the first element of the object; however, correct operation
-            is assured regardless.
+        /** Get the _id field from the object.  For good performance drivers
+            should assure that _id is the first element of the object; however,
+            correct operation is assured regardless.
             @return true if found
         */
         bool getObjectID(BSONElement& e) const;
@@ -346,8 +374,9 @@ namespace mongo {
         /** add all elements of the object to the specified list */
         void elems(list<BSONElement> &) const;
 
-        /** add all values of the object to the specified vector.  If type mismatches, exception.
-            this is most useful when the BSONObj is an array, but can be used with non-arrays too in theory.
+        /** add all values of the object to the specified vector.  If type
+            mismatches, exception. this is most useful when the BSONObj is an
+            array, but can be used with non-arrays too in theory.
 
             example:
               bo sub = y["subobj"].Obj();
@@ -356,14 +385,17 @@ namespace mongo {
         */
         template <class T>
         void Vals(vector<T> &) const;
-        /** add all values of the object to the specified list.  If type mismatches, exception. */
+        /** add all values of the object to the specified list.  If type
+            mismatches, exception. */
         template <class T>
         void Vals(list<T> &) const;
 
-        /** add all values of the object to the specified vector.  If type mismatches, skip. */
+        /** add all values of the object to the specified vector.  If type
+            mismatches, skip. */
         template <class T>
         void vals(vector<T> &) const;
-        /** add all values of the object to the specified list.  If type mismatches, skip. */
+        /** add all values of the object to the specified list.  If type
+            mismatches, skip. */
         template <class T>
         void vals(list<T> &) const;
 
