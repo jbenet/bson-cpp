@@ -21,7 +21,7 @@
 
 #include <ctime>
 
-namespace mongo {
+namespace bson {
 
     using namespace std;
 
