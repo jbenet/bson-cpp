@@ -17,7 +17,7 @@
 
 #pragma once
 
-namespace mongo {
+namespace bson {
 
     int getGtLtOp(const BSONElement& e);
 
@@ -52,7 +52,8 @@ namespace mongo {
         RIGHT_SUBFIELD = 2
     };
 
-    FieldCompareResult compareDottedFieldNames( const string& l , const string& r );
+    FieldCompareResult
+      compareDottedFieldNames( const string& l , const string& r );
 
     /** Use BSON macro to build a BSONObj from a stream
 
@@ -62,19 +63,22 @@ namespace mongo {
         with auto-generated object id:
            BSON( GENOID << "name" << "joe" << "age" << 33 )
 
-        The labels GT, GTE, LT, LTE, NE can be helpful for stream-oriented construction
-        of a BSONObj, particularly when assembling a Query.  For example,
-        BSON( "a" << GT << 23.4 << NE << 30 << "b" << 2 ) produces the object
-        { a: { \$gt: 23.4, \$ne: 30 }, b: 2 }.
+        The labels GT, GTE, LT, LTE, NE can be helpful for stream-oriented
+        construction of a BSONObj, particularly when assembling a Query.  For
+        example,
+          BSON( "a" << GT << 23.4 << NE << 30 << "b" << 2 )
+        produces the object
+          { a: { \$gt: 23.4, \$ne: 30 }, b: 2 }.
     */
-#define BSON(x) (( mongo::BSONObjBuilder(64) << x ).obj())
+#define BSON(x) (( bson::BSONObjBuilder(64) << x ).obj())
 
     /** Use BSON_ARRAY macro like BSON macro, but without keys
 
-        BSONArray arr = BSON_ARRAY( "hello" << 1 << BSON( "foo" << BSON_ARRAY( "bar" << "baz" << "qux" ) ) );
+        BSONArray arr = BSON_ARRAY( "hello" << 1 << BSON( "foo" <<
+          BSON_ARRAY( "bar" << "baz" << "qux" ) ) );
 
      */
-#define BSON_ARRAY(x) (( mongo::BSONArrayBuilder() << x ).arr())
+#define BSON_ARRAY(x) (( bson::BSONArrayBuilder() << x ).arr())
 
     /* Utility class to auto assign object IDs.
        Example:
@@ -84,7 +88,8 @@ namespace mongo {
 
     /* Utility class to add a Date element with the current time
        Example:
-         cout << BSON( "created" << DATENOW ); // { created : "2009-10-09 11:41:42" }
+         cout << BSON( "created" << DATENOW );
+          // { created : "2009-10-09 11:41:42" }
     */
     extern struct DateNowLabeler { } DATENOW;
 
@@ -102,7 +107,9 @@ namespace mongo {
             Label( const char *l ) : l_( l ) {}
             const char *l_;
         };
-        Labeler( const Label &l, BSONObjBuilderValueStream *s ) : l_( l ), s_( s ) {}
+        Labeler( const Label &l, BSONObjBuilderValueStream *s )
+          : l_( l ), s_( s ) {}
+
         template<class T>
         BSONObjBuilder& operator<<( T value );
 
@@ -129,9 +136,12 @@ namespace mongo {
     // becomes   : {$or: [{x: {$gt: 7}}, {y: {$lt: 6}}]}
     inline BSONObj OR(const BSONObj& a, const BSONObj& b);
     inline BSONObj OR(const BSONObj& a, const BSONObj& b, const BSONObj& c);
-    inline BSONObj OR(const BSONObj& a, const BSONObj& b, const BSONObj& c, const BSONObj& d);
-    inline BSONObj OR(const BSONObj& a, const BSONObj& b, const BSONObj& c, const BSONObj& d, const BSONObj& e);
-    inline BSONObj OR(const BSONObj& a, const BSONObj& b, const BSONObj& c, const BSONObj& d, const BSONObj& e, const BSONObj& f);
+    inline BSONObj OR(const BSONObj& a, const BSONObj& b, const BSONObj& c,
+      const BSONObj& d);
+    inline BSONObj OR(const BSONObj& a, const BSONObj& b, const BSONObj& c,
+      const BSONObj& d, const BSONObj& e);
+    inline BSONObj OR(const BSONObj& a, const BSONObj& b, const BSONObj& c,
+      const BSONObj& d, const BSONObj& e, const BSONObj& f);
     // definitions in bsonobjbuilder.h b/c of incomplete types
 
     // Utility class to implement BSON( key << val ) as described above.
@@ -165,7 +175,8 @@ namespace mongo {
     };
 
     /**
-       used in conjuction with BSONObjBuilder, allows for proper buffer size to prevent crazy memory usage
+       used in conjuction with BSONObjBuilder, allows for proper buffer size to
+       prevent crazy memory usage
      */
     class BSONSizeTracker {
     public:
