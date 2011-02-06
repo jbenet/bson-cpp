@@ -42,7 +42,8 @@ namespace mongo {
     void OID::foldInPid(OID::MachineAndPid& x) {
         unsigned p = ourPid();
         x._pid ^= (unsigned short) p;
-        // when the pid is greater than 16 bits, let the high bits modulate the machine id field.
+        // when the pid is greater than 16 bits, let the high bits modulate the
+        // machine id field.
         unsigned short& rest = (unsigned short &) x._machineNumber[1];
         rest ^= p >> 16;
     }
@@ -50,8 +51,9 @@ namespace mongo {
     OID::MachineAndPid OID::genMachineAndPid() {
         BOOST_STATIC_ASSERT( sizeof(mongo::OID::MachineAndPid) == 5 );
 
-        // this is not called often, so the following is not expensive, and gives us some
-        // testing that nonce generation is working right and that our OIDs are (perhaps) ok.
+        // this is not called often, so the following is not expensive, and
+        // gives us some testing that nonce generation is working right and that
+        // our OIDs are (perhaps) ok.
         {
             nonce a = security.getNonce();
             nonce b = security.getNonce();
@@ -72,7 +74,8 @@ namespace mongo {
         ourMachineAndPid = genMachineAndPid();
     }
 
-    inline bool OID::MachineAndPid::operator!=(const OID::MachineAndPid& rhs) const {
+    inline bool OID::MachineAndPid::operator!=(const OID::MachineAndPid& rhs)
+      const {
         return _pid != rhs._pid || _machineNumber != rhs._machineNumber;
     }
 
@@ -87,8 +90,9 @@ namespace mongo {
 
     void OID::justForked() {
         MachineAndPid x = ourMachine;
-        // we let the random # for machine go into all 5 bytes of MachineAndPid, and then
-        // xor in the pid into _pid.  this reduces the probability of collisions.
+        // we let the random # for machine go into all 5 bytes of MachineAndPid,
+        // and the xor in the pid into _pid.  this reduces the probability of
+        // collisions.
         foldInPid(x);
         ourMachineAndPid = genMachineAndPid();
         assert( x != ourMachineAndPid );
@@ -101,8 +105,8 @@ namespace mongo {
         {
             unsigned t = (unsigned) time(0);
             unsigned char *T = (unsigned char *) &t;
-            _time[0] = T[3]; // big endian order because we use memcmp() to compare OID's
-            _time[1] = T[2];
+            _time[0] = T[3]; // big endian order because we use memcmp() to
+            _time[1] = T[2]; // compare OID's
             _time[2] = T[1];
             _time[3] = T[0];
         }
