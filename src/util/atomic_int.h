@@ -44,7 +44,8 @@ namespace mongo {
 #if defined(_WIN32)
     AtomicUInt AtomicUInt::operator++() {
         // InterlockedIncrement returns the new value
-        return InterlockedIncrement((volatile long*)&x); //long is 32bits in Win64
+        return InterlockedIncrement((volatile long*)&x);
+          //long is 32bits in Win64
     }
     AtomicUInt AtomicUInt::operator++(int) {
         return InterlockedIncrement((volatile long*)&x)-1;

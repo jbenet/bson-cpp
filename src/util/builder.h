@@ -25,13 +25,14 @@
 #include "../inline_decls.h"
 #include "../stringdata.h"
 
-namespace mongo {
+namespace bson {
 
-    /* Note the limit here is rather arbitrary and is simply a standard. generally the code works
-       with any object that fits in ram.
+    /* Note the limit here is rather arbitrary and is simply a standard.
+       generally the code works with any object that fits in ram.
 
-       Also note that the server has some basic checks to enforce this limit but those checks are not exhaustive
-       for example need to check for size too big after
+       Also note that the server has some basic checks to enforce this limit but
+       those checks are not exhaustive for example need to check for size too
+       big after
          update $push (append) operation
          various db.eval() type operations
     */
@@ -83,7 +84,8 @@ namespace mongo {
         }
 
         /** leave room for some stuff later
-            @return point to region that was skipped.  pointer may change later (on realloc), so for immediate use only
+            @return point to region that was skipped.  pointer may change later
+            (on realloc), so for immediate use only
         */
         char* skip(int n) { return grow(n); }
 
@@ -219,14 +221,17 @@ namespace mongo {
             int z = sprintf( start , "%.16g" , x );
             assert( z >= 0 );
             _buf.l = prev + z;
-            if( strchr(start, '.') == 0 && strchr(start, 'E') == 0 && strchr(start, 'N') == 0 ) {
+            if( strchr(start, '.') == 0 && strchr(start, 'E') == 0
+              && strchr(start, 'N') == 0 ) {
                 write( ".0" , 2 );
             }
         }
 
-        void write( const char* buf, int len) { memcpy( _buf.grow( len ) , buf , len ); }
+        void write( const char* buf, int len)
+          { memcpy( _buf.grow( len ) , buf , len ); }
 
-        void append( const StringData& str ) { memcpy( _buf.grow( str.size() ) , str.data() , str.size() ); }
+        void append( const StringData& str )
+          { memcpy( _buf.grow( str.size() ) , str.data() , str.size() ); }
 
         StringBuilder& operator<<( const StringData& str ) {
             append( str );
@@ -258,4 +263,4 @@ namespace mongo {
 #pragma warning( pop )
 #endif
 
-} // namespace mongo
+} // namespace bson
