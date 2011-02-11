@@ -18,6 +18,7 @@
 #pragma once
 
 #include "util/hex.h"
+#include "util/misc.h"
 
 namespace bson {
 

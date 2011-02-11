@@ -17,7 +17,8 @@
 */
 
 #define BOOST_SPIRIT_THREADSAFE
-#if BOOST_VERSION >= 103800
+//#if BOOST_VERSION >= 103800
+#if true
 #define BOOST_SPIRIT_USE_OLD_NAMESPACE
 #include <boost/spirit/include/classic_core.hpp>
 #include <boost/spirit/include/classic_loops.hpp>
@@ -30,9 +31,8 @@
 
 #include "json.h"
 #include "util/builder.h"
-#include "util/base64.h"
 #include "util/hex.h"
-
+#include "lib/base64.h"
 
 using namespace boost::spirit;
 

@@ -1,9 +1,6 @@
-/** @file bson.h
-    BSON classes
-*/
+// nonce.h
 
-/*
- *    Copyright 2009 10gen Inc.
+/*    Copyright 2009 10gen Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,26 +15,31 @@
  *    limitations under the License.
  */
 
-/**
-   bo and its helpers
-
-   "BSON" stands for "binary JSON" -- ie a binary way to represent objects that
-   would be represented in JSON (plus a few extensions useful for databases &
-   other languages).
-
-   http://www.bsonspec.org/
-*/
-
 #pragma once
 
-#include "bsonassert.h"
+#include <iostream>
 
-#include "bsontypes.h"
-#include "oid.h"
-#include "bsonelement.h"
-#include "bsonobj.h"
-#include "bsonmisc.h"
-#include "bsonobjbuilder.h"
-#include "bsonobjiterator.h"
-#include "bson-inl.h"
-#include "bson_db.h"
+namespace Nonce {
+
+    typedef unsigned long long nonce;
+
+    struct Security {
+        Security();
+
+        nonce getNonce();
+        /** safe during global var initialization */
+        nonce getNonceInitSafe() {
+            init();
+            return getNonce();
+        }
+
+    private:
+        std::ifstream *_devrandom;
+        static bool _initialized;
+        void init();
+
+    };
+
+    extern Security security;
+
+} // namespace mongo

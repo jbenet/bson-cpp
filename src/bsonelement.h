@@ -19,16 +19,21 @@
 
 #include <vector>
 #include <string.h>
-#include "util/builder.h"
 #include "oid.h"
+#include "util/builder.h"
+#include "bsontypes.h"
+#include "bsonassert.h"
+#include "util/optime.h"
 
 namespace bson {
+
+    class BSONElement;
+    class BSONObj;
+    class BSONObjBuilder;
+
     typedef bson::BSONElement be;
     typedef bson::BSONObj bo;
     typedef bson::BSONObjBuilder bob;
-
-    class OpTime;
-    class BSONElement;
 
     /* l and r MUST have same type when called: check that first. */
     int compareElementValues(const BSONElement& l, const BSONElement& r);

@@ -18,6 +18,12 @@
  */
 
 #include "framework.h"
+#include "bson.h"
+#include "util/json.h"
+#include "util/time_support.h"
+#include "src/bson-inl.h"
+#include "lib/nonce.h"
+#include <ostream>
 
 using namespace bson;
 
@@ -208,19 +214,19 @@ namespace test_bsonobj {
                 e = i.next();
                 ASSERT( e.eoo() );
 
-                OpTime before = OpTime::now();
-                BSONElementManipulator( o.firstElement() ).initTimestamp();
-                OpTime after = OpTime::now();
-
-                OpTime test = OpTime( o.firstElement().date() );
-                ASSERT( before < test && test < after );
-
-                BSONElementManipulator( o.firstElement() ).initTimestamp();
-                test = OpTime( o.firstElement().date() );
-                ASSERT( before < test && test < after );
-
-                OpTime x(123,456);
-                ASSERT_EQUALS( 528280977864LL , x.asLL() );
+                // OpTime before = OpTime::now();
+                // BSONElementManipulator( o.firstElement() ).initTimestamp();
+                // OpTime after = OpTime::now();
+                //
+                // OpTime test = OpTime( o.firstElement().date() );
+                // ASSERT( before < test && test < after );
+                //
+                // BSONElementManipulator( o.firstElement() ).initTimestamp();
+                // test = OpTime( o.firstElement().date() );
+                // ASSERT( before < test && test < after );
+                //
+                // OpTime x(123,456);
+                // ASSERT_EQUALS( 528280977864LL , x.asLL() );
             }
         };
 
@@ -813,7 +819,8 @@ namespace test_bsonobj {
 
                 // yes, there is a 1/1000 chance this won't increase time(0)
                 // and therefore inaccurately say the function is behaving
-                // buf if its broken, it will fail 999/1000, so i think that's good enough
+                // buf if its broken, it will fail 999/1000, so i think that's
+                // good enough
                 sleepsecs( 1 );
                 BSONObj c = g();
                 ASSERT( a.woCompare( c ) < 0 );
@@ -949,13 +956,14 @@ namespace test_bsonobj {
             }
         };
 
-        class Unallowed {
-        public:
-            void run() {
-                ASSERT_EXCEPTION( BSON( GT << 4 ), MsgAssertionException );
-                ASSERT_EXCEPTION( BSON( "a" << 1 << GT << 4 ), MsgAssertionException );
-            }
-        };
+        // class Unallowed {
+        // public:
+        //     void run() {
+        //         ASSERT_EXCEPTION( BSON( GT << 4 ), MsgAssertionException );
+        //         ASSERT_EXCEPTION( BSON( "a" << 1 << GT << 4 ),
+        //           MsgAssertionException );
+        //     }
+        // };
 
         class ElementAppend {
         public:
@@ -1137,196 +1145,196 @@ namespace test_bsonobj {
         }
     };
 
-    namespace external_sort {
-        class Basic1 {
-        public:
-            void run() {
-                BSONObjExternalSorter sorter;
-                sorter.add( BSON( "x" << 10 ) , 5  , 1);
-                sorter.add( BSON( "x" << 2 ) , 3 , 1 );
-                sorter.add( BSON( "x" << 5 ) , 6 , 1 );
-                sorter.add( BSON( "x" << 5 ) , 7 , 1 );
-
-                sorter.sort();
-
-                auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
-                int num=0;
-                while ( i->more() ) {
-                    pair<BSONObj,DiskLoc> p = i->next();
-                    if ( num == 0 )
-                        assert( p.first["x"].number() == 2 );
-                    else if ( num <= 2 ) {
-                        assert( p.first["x"].number() == 5 );
-                    }
-                    else if ( num == 3 )
-                        assert( p.first["x"].number() == 10 );
-                    else
-                        ASSERT( 0 );
-                    num++;
-                }
-
-
-                ASSERT_EQUALS( 0 , sorter.numFiles() );
-            }
-        };
-
-        class Basic2 {
-        public:
-            void run() {
-                BSONObjExternalSorter sorter( BSONObj() , 10 );
-                sorter.add( BSON( "x" << 10 ) , 5  , 11 );
-                sorter.add( BSON( "x" << 2 ) , 3 , 1 );
-                sorter.add( BSON( "x" << 5 ) , 6 , 1 );
-                sorter.add( BSON( "x" << 5 ) , 7 , 1 );
-
-                sorter.sort();
-
-                auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
-                int num=0;
-                while ( i->more() ) {
-                    pair<BSONObj,DiskLoc> p = i->next();
-                    if ( num == 0 ) {
-                        assert( p.first["x"].number() == 2 );
-                        ASSERT_EQUALS( p.second.toString() , "3:1" );
-                    }
-                    else if ( num <= 2 )
-                        assert( p.first["x"].number() == 5 );
-                    else if ( num == 3 ) {
-                        assert( p.first["x"].number() == 10 );
-                        ASSERT_EQUALS( p.second.toString() , "5:b" );
-                    }
-                    else
-                        ASSERT( 0 );
-                    num++;
-                }
-
-            }
-        };
-
-        class Basic3 {
-        public:
-            void run() {
-                BSONObjExternalSorter sorter( BSONObj() , 10 );
-                sorter.sort();
-
-                auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
-                assert( ! i->more() );
-
-            }
-        };
-
-
-        class ByDiskLock {
-        public:
-            void run() {
-                BSONObjExternalSorter sorter;
-                sorter.add( BSON( "x" << 10 ) , 5  , 4);
-                sorter.add( BSON( "x" << 2 ) , 3 , 0 );
-                sorter.add( BSON( "x" << 5 ) , 6 , 2 );
-                sorter.add( BSON( "x" << 5 ) , 7 , 3 );
-                sorter.add( BSON( "x" << 5 ) , 2 , 1 );
-
-                sorter.sort();
-
-                auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
-                int num=0;
-                while ( i->more() ) {
-                    pair<BSONObj,DiskLoc> p = i->next();
-                    if ( num == 0 )
-                        assert( p.first["x"].number() == 2 );
-                    else if ( num <= 3 ) {
-                        assert( p.first["x"].number() == 5 );
-                    }
-                    else if ( num == 4 )
-                        assert( p.first["x"].number() == 10 );
-                    else
-                        ASSERT( 0 );
-                    ASSERT_EQUALS( num , p.second.getOfs() );
-                    num++;
-                }
-
-
-            }
-        };
-
-
-        class Big1 {
-        public:
-            void run() {
-                BSONObjExternalSorter sorter( BSONObj() , 2000 );
-                for ( int i=0; i<10000; i++ ) {
-                    sorter.add( BSON( "x" << rand() % 10000 ) , 5  , i );
-                }
-
-                sorter.sort();
-
-                auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
-                int num=0;
-                double prev = 0;
-                while ( i->more() ) {
-                    pair<BSONObj,DiskLoc> p = i->next();
-                    num++;
-                    double cur = p.first["x"].number();
-                    assert( cur >= prev );
-                    prev = cur;
-                }
-                assert( num == 10000 );
-            }
-        };
-
-        class Big2 {
-        public:
-            void run() {
-                const int total = 100000;
-                BSONObjExternalSorter sorter( BSONObj() , total * 2 );
-                for ( int i=0; i<total; i++ ) {
-                    sorter.add( BSON( "a" << "b" ) , 5  , i );
-                }
-
-                sorter.sort();
-
-                auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
-                int num=0;
-                double prev = 0;
-                while ( i->more() ) {
-                    pair<BSONObj,DiskLoc> p = i->next();
-                    num++;
-                    double cur = p.first["x"].number();
-                    assert( cur >= prev );
-                    prev = cur;
-                }
-                assert( num == total );
-                ASSERT( sorter.numFiles() > 2 );
-            }
-        };
-
-        class D1 {
-        public:
-            void run() {
-
-                BSONObjBuilder b;
-                b.appendNull("");
-                BSONObj x = b.obj();
-
-                BSONObjExternalSorter sorter;
-                sorter.add(x, DiskLoc(3,7));
-                sorter.add(x, DiskLoc(4,7));
-                sorter.add(x, DiskLoc(2,7));
-                sorter.add(x, DiskLoc(1,7));
-                sorter.add(x, DiskLoc(3,77));
-
-                sorter.sort();
-
-                auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
-                while( i->more() ) {
-                    BSONObjExternalSorter::Data d = i->next();
-                    /*cout << d.second.toString() << endl;
-                    cout << d.first.objsize() << endl;
-                    cout<<"SORTER next:" << d.first.toString() << endl;*/
-                }
-            }
-        };
-    }
+    // namespace external_sort {
+    //     class Basic1 {
+    //     public:
+    //         void run() {
+    //             BSONObjExternalSorter sorter;
+    //             sorter.add( BSON( "x" << 10 ) , 5  , 1);
+    //             sorter.add( BSON( "x" << 2 ) , 3 , 1 );
+    //             sorter.add( BSON( "x" << 5 ) , 6 , 1 );
+    //             sorter.add( BSON( "x" << 5 ) , 7 , 1 );
+    //
+    //             sorter.sort();
+    //
+    //             auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
+    //             int num=0;
+    //             while ( i->more() ) {
+    //                 pair<BSONObj,DiskLoc> p = i->next();
+    //                 if ( num == 0 )
+    //                     assert( p.first["x"].number() == 2 );
+    //                 else if ( num <= 2 ) {
+    //                     assert( p.first["x"].number() == 5 );
+    //                 }
+    //                 else if ( num == 3 )
+    //                     assert( p.first["x"].number() == 10 );
+    //                 else
+    //                     ASSERT( 0 );
+    //                 num++;
+    //             }
+    //
+    //
+    //             ASSERT_EQUALS( 0 , sorter.numFiles() );
+    //         }
+    //     };
+    //
+    //     class Basic2 {
+    //     public:
+    //         void run() {
+    //             BSONObjExternalSorter sorter( BSONObj() , 10 );
+    //             sorter.add( BSON( "x" << 10 ) , 5  , 11 );
+    //             sorter.add( BSON( "x" << 2 ) , 3 , 1 );
+    //             sorter.add( BSON( "x" << 5 ) , 6 , 1 );
+    //             sorter.add( BSON( "x" << 5 ) , 7 , 1 );
+    //
+    //             sorter.sort();
+    //
+    //             auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
+    //             int num=0;
+    //             while ( i->more() ) {
+    //                 pair<BSONObj,DiskLoc> p = i->next();
+    //                 if ( num == 0 ) {
+    //                     assert( p.first["x"].number() == 2 );
+    //                     ASSERT_EQUALS( p.second.toString() , "3:1" );
+    //                 }
+    //                 else if ( num <= 2 )
+    //                     assert( p.first["x"].number() == 5 );
+    //                 else if ( num == 3 ) {
+    //                     assert( p.first["x"].number() == 10 );
+    //                     ASSERT_EQUALS( p.second.toString() , "5:b" );
+    //                 }
+    //                 else
+    //                     ASSERT( 0 );
+    //                 num++;
+    //             }
+    //
+    //         }
+    //     };
+    //
+    //     class Basic3 {
+    //     public:
+    //         void run() {
+    //             BSONObjExternalSorter sorter( BSONObj() , 10 );
+    //             sorter.sort();
+    //
+    //             auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
+    //             assert( ! i->more() );
+    //
+    //         }
+    //     };
+    //
+    //
+    //     class ByDiskLock {
+    //     public:
+    //         void run() {
+    //             BSONObjExternalSorter sorter;
+    //             sorter.add( BSON( "x" << 10 ) , 5  , 4);
+    //             sorter.add( BSON( "x" << 2 ) , 3 , 0 );
+    //             sorter.add( BSON( "x" << 5 ) , 6 , 2 );
+    //             sorter.add( BSON( "x" << 5 ) , 7 , 3 );
+    //             sorter.add( BSON( "x" << 5 ) , 2 , 1 );
+    //
+    //             sorter.sort();
+    //
+    //             auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
+    //             int num=0;
+    //             while ( i->more() ) {
+    //                 pair<BSONObj,DiskLoc> p = i->next();
+    //                 if ( num == 0 )
+    //                     assert( p.first["x"].number() == 2 );
+    //                 else if ( num <= 3 ) {
+    //                     assert( p.first["x"].number() == 5 );
+    //                 }
+    //                 else if ( num == 4 )
+    //                     assert( p.first["x"].number() == 10 );
+    //                 else
+    //                     ASSERT( 0 );
+    //                 ASSERT_EQUALS( num , p.second.getOfs() );
+    //                 num++;
+    //             }
+    //
+    //
+    //         }
+    //     };
+    //
+    //
+    //     class Big1 {
+    //     public:
+    //         void run() {
+    //             BSONObjExternalSorter sorter( BSONObj() , 2000 );
+    //             for ( int i=0; i<10000; i++ ) {
+    //                 sorter.add( BSON( "x" << rand() % 10000 ) , 5  , i );
+    //             }
+    //
+    //             sorter.sort();
+    //
+    //             auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
+    //             int num=0;
+    //             double prev = 0;
+    //             while ( i->more() ) {
+    //                 pair<BSONObj,DiskLoc> p = i->next();
+    //                 num++;
+    //                 double cur = p.first["x"].number();
+    //                 assert( cur >= prev );
+    //                 prev = cur;
+    //             }
+    //             assert( num == 10000 );
+    //         }
+    //     };
+    //
+    //     class Big2 {
+    //     public:
+    //         void run() {
+    //             const int total = 100000;
+    //             BSONObjExternalSorter sorter( BSONObj() , total * 2 );
+    //             for ( int i=0; i<total; i++ ) {
+    //                 sorter.add( BSON( "a" << "b" ) , 5  , i );
+    //             }
+    //
+    //             sorter.sort();
+    //
+    //             auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
+    //             int num=0;
+    //             double prev = 0;
+    //             while ( i->more() ) {
+    //                 pair<BSONObj,DiskLoc> p = i->next();
+    //                 num++;
+    //                 double cur = p.first["x"].number();
+    //                 assert( cur >= prev );
+    //                 prev = cur;
+    //             }
+    //             assert( num == total );
+    //             ASSERT( sorter.numFiles() > 2 );
+    //         }
+    //     };
+    //
+    //     class D1 {
+    //     public:
+    //         void run() {
+    //
+    //             BSONObjBuilder b;
+    //             b.appendNull("");
+    //             BSONObj x = b.obj();
+    //
+    //             BSONObjExternalSorter sorter;
+    //             sorter.add(x, DiskLoc(3,7));
+    //             sorter.add(x, DiskLoc(4,7));
+    //             sorter.add(x, DiskLoc(2,7));
+    //             sorter.add(x, DiskLoc(1,7));
+    //             sorter.add(x, DiskLoc(3,77));
+    //
+    //             sorter.sort();
+    //
+    //             auto_ptr<BSONObjExternalSorter::Iterator> i = sorter.iterator();
+    //             while( i->more() ) {
+    //                 BSONObjExternalSorter::Data d = i->next();
+    //                 /*cout << d.second.toString() << endl;
+    //                 cout << d.first.objsize() << endl;
+    //                 cout<<"SORTER next:" << d.first.toString() << endl;*/
+    //             }
+    //         }
+    //     };
+    // }
 
     class CompatBSON {
     public:
@@ -1336,16 +1344,16 @@ namespace test_bsonobj {
 
         void run() {
 
-            JSONBSONTEST( "{ 'x' : true }" , 9 , "6fe24623e4efc5cf07f027f9c66b5456" );
-            JSONBSONTEST( "{ 'x' : null }" , 8 , "12d43430ff6729af501faf0638e68888" );
-            JSONBSONTEST( "{ 'x' : 5.2 }" , 16 , "aaeeac4a58e9c30eec6b0b0319d0dff2" );
-            JSONBSONTEST( "{ 'x' : 'eliot' }" , 18 , "331a3b8b7cbbe0706c80acdb45d4ebbe" );
-            JSONBSONTEST( "{ 'x' : 5.2 , 'y' : 'truth' , 'z' : 1.1 }" , 40 , "7c77b3a6e63e2f988ede92624409da58" );
-            JSONBSONTEST( "{ 'a' : { 'b' : 1.1 } }" , 24 , "31887a4b9d55cd9f17752d6a8a45d51f" );
-            JSONBSONTEST( "{ 'x' : 5.2 , 'y' : { 'a' : 'eliot' , b : true } , 'z' : null }" , 44 , "b3de8a0739ab329e7aea138d87235205" );
-            JSONBSONTEST( "{ 'x' : 5.2 , 'y' : [ 'a' , 'eliot' , 'b' , true ] , 'z' : null }" , 62 , "cb7bad5697714ba0cbf51d113b6a0ee8" );
+          JSONBSONTEST( "{ 'x' : true }", 9 ,"6fe24623e4efc5cf07f027f9c66b5456");
+          JSONBSONTEST( "{ 'x' : null }" , 8 , "12d43430ff6729af501faf0638e68888" );
+          JSONBSONTEST( "{ 'x' : 5.2 }" , 16 , "aaeeac4a58e9c30eec6b0b0319d0dff2" );
+          JSONBSONTEST( "{ 'x' : 'eliot' }" , 18 , "331a3b8b7cbbe0706c80acdb45d4ebbe" );
+          JSONBSONTEST( "{ 'x' : 5.2 , 'y' : 'truth' , 'z' : 1.1 }" , 40 , "7c77b3a6e63e2f988ede92624409da58" );
+          JSONBSONTEST( "{ 'a' : { 'b' : 1.1 } }" , 24 , "31887a4b9d55cd9f17752d6a8a45d51f" );
+          JSONBSONTEST( "{ 'x' : 5.2 , 'y' : { 'a' : 'eliot' , b : true } , 'z' : null }" , 44 , "b3de8a0739ab329e7aea138d87235205" );
+          JSONBSONTEST( "{ 'x' : 5.2 , 'y' : [ 'a' , 'eliot' , 'b' , true ] , 'z' : null }" , 62 , "cb7bad5697714ba0cbf51d113b6a0ee8" );
 
-            RAWBSONTEST( BSON( "x" << 4 ) , 12 , "d1ed8dbf79b78fa215e2ded74548d89d" );
+          RAWBSONTEST( BSON( "x" << 4 ) , 12 , "d1ed8dbf79b78fa215e2ded74548d89d" );
 
         }
     };
@@ -1496,14 +1504,16 @@ namespace test_bsonobj {
             BSONObj o = fromjson( s );
             if ( o.okForStorage() )
                 return;
-            throw UserException( 12528 , (string)"should be ok for storage:" + s );
+            ASSERT(false);
+// throw UserException(12528, (string)"should be ok for storage:" + s);
         }
 
         void bad( string s ) {
             BSONObj o = fromjson( s );
             if ( ! o.okForStorage() )
                 return;
-            throw UserException( 12529 , (string)"should NOT be ok for storage:" + s );
+            ASSERT(false);
+// throw UserException(12529 , (string)"should NOT be ok for storage:" + s );
         }
 
         void run() {
@@ -1723,11 +1733,18 @@ namespace test_bsonobj {
 
     class HashingTest {
     public:
+        inline int checksum( const char* x , int size ) {
+            int ck = 0;
+            for ( int i=0; i<size; i++ )
+                ck += ( (int)x[i] * ( i + 1 ) );
+            return ck;
+        }
+
         void run() {
             int N = 100000;
             BSONObj x = BSON( "name" << "eliot was here"
-                              << "x" << 5
-                              << "asdasdasdas" << "asldkasldjasldjasldjlasjdlasjdlasdasdasdasdasdasdasd" );
+              << "x" << 5 << "asdasdasdas"
+              << "asldkasldjasldjasldjlasjdlasjdlasdasdasdasdasdasdasd" );
 
             {
                 Timer t;
@@ -1756,7 +1773,7 @@ namespace test_bsonobj {
         }
     };
 
-    class All : public Suite {
+    class All : public bson::regression::Suite {
     public:
         All() : Suite( "jsobj" ) {
         }
@@ -1830,9 +1847,9 @@ namespace test_bsonobj {
             add< ValueStreamTests::LabelSize >();
             add< ValueStreamTests::LabelMulti >();
             add< ValueStreamTests::LabelishOr >();
-            add< ValueStreamTests::Unallowed >();
+            // add< ValueStreamTests::Unallowed >();
             add< ValueStreamTests::ElementAppend >();
-            add< ValueStreamTests::Unallowed >();
+            // add< ValueStreamTests::Unallowed >();
             add< ValueStreamTests::ElementAppend >();
             add< SubObjectBuilder >();
             add< DateBuilder >();
@@ -1842,13 +1859,13 @@ namespace test_bsonobj {
             add< MinMaxElementTest >();
             add< ComparatorTest >();
             add< ExtractFieldsTest >();
-            add< external_sort::Basic1 >();
-            add< external_sort::Basic2 >();
-            add< external_sort::Basic3 >();
-            add< external_sort::ByDiskLock >();
-            add< external_sort::Big1 >();
-            add< external_sort::Big2 >();
-            add< external_sort::D1 >();
+            // add< external_sort::Basic1 >();
+            // add< external_sort::Basic2 >();
+            // add< external_sort::Basic3 >();
+            // add< external_sort::ByDiskLock >();
+            // add< external_sort::Big1 >();
+            // add< external_sort::Big2 >();
+            // add< external_sort::D1 >();
             add< CompatBSON >();
             add< CompareDottedFieldNamesTest >();
             add< NestedDottedConversions >();
@@ -1873,7 +1890,7 @@ namespace test_bsonobj {
 
 
 int main( int argc, char** argv ) {
-    static StaticObserver StaticObserver;
-    return Suite::run(argc, argv, "/tmp/unittest");
+  std::cout << test_bsonobj::myall.run("");
+  return 0;
 }
 

@@ -17,7 +17,11 @@
 
 #pragma once
 
+#include "bsonassert.h"
+#include "builder.h"
+
 namespace bson {
+
     //can't use hex namespace because it conflicts with hex iostream function
     inline int fromHex( char c ) {
         if ( '0' <= c && c <= '9' )

@@ -17,11 +17,15 @@
 
 #include "oid.h"
 #include "lib/atomic_int.h"
-#include "../db/nonce.h"
+#include "lib/nonce.h"
 
-BOOST_STATIC_ASSERT( sizeof(OID) == 12 );
+#include <boost/static_assert.hpp>
 
-namespace mongo {
+BOOST_STATIC_ASSERT( sizeof(bson::OID) == 12 );
+
+using namespace Nonce;
+
+namespace bson {
 
     // machine # before folding in the process id
     OID::MachineAndPid OID::ourMachine;
@@ -99,7 +103,7 @@ namespace mongo {
     }
 
     void OID::init() {
-        static AtomicUInt inc = (unsigned) security.getNonce();
+        static mongo::AtomicUInt inc = (unsigned) security.getNonce();
 
         {
             unsigned t = (unsigned) time(0);

@@ -22,6 +22,7 @@
 #include <vector>
 #include "util/builder.h"
 #include "stringdata.h"
+#include "bsonelement.h"
 
 namespace bson {
 
