@@ -8,6 +8,9 @@ configure:
 	@-(cd build/; ln -s ../lib; ln -s ../src; ln -s ../test)
 	@cd build/ && ./autogen.sh && ./$@
 
+install:
+	make -C build install
+
 clean:
 	make -C build clean
 
