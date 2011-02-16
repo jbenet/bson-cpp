@@ -19,11 +19,11 @@
 
 #include <vector>
 #include <string.h>
-#include <bson/oid.h>
-#include <bson/builder.h>
-#include <bson/bsontypes.h>
-#include <bson/bsonassert.h>
-#include <bson/optime.h>
+#include "oid.h"
+#include "util/builder.h"
+#include "bsontypes.h"
+#include "bsonassert.h"
+#include "util/optime.h"
 
 namespace bson {
 

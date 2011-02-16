@@ -18,10 +18,9 @@
 #pragma once
 
 #include <map>
-
-#include <bson/atomic_int.h>
-#include <bson/misc.h>
-#include <bson/hex.h>
+#include "lib/atomic_int.h"
+#include "util/misc.h"
+#include "util/hex.h"
 
 namespace bson {
 

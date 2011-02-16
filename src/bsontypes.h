@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <bson/util/misc.h>
+#include "util/misc.h"
 
 namespace bson {
     using namespace std;
