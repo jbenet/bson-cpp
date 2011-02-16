@@ -6,22 +6,31 @@ ACLOCAL_AMFLAGS = -I m4
 # LIBRARY
 
 includedir = /usr/local/include/bson
+utilpkg_includedir = $(includedir)/util
 
 VERSION = 0.1
 
-BSONHEADERS = src/*.h src/util/*.h
-BSONSOURCES = src/bsonobj.cpp src/oid.cpp src/util/json.cpp
+BSONHEADERS = src/*.h
+BSONSOURCES = src/bsonobj.cpp src/oid.cpp
+
+UTILHEADERS = src/util/*.h
+UTILSOURCES = src/util/json.cpp
+
 LIBSOURCES = lib/base64.cpp lib/md5.c lib/nonce.cpp
 
 bsoncppdir = src/
 lib_LTLIBRARIES = libbsoncpp.la
 include_HEADERS = $(BSONHEADERS)
-libbsoncpp_la_SOURCES = $(BSONSOURCES) $(LIBSOURCES)
+utilpkg_include_HEADERS = $(UTILHEADERS)
+
+libbsoncpp_la_SOURCES = $(BSONSOURCES) $(UTILSOURCES) $(LIBSOURCES)
 libbsoncpp_la_CPPFLAGS = -fPIC $(AM_CPPFLAGS)
 libbsoncpp_la_LDFLAGS = -version-info 0:1:0
 
 library_includedir=$(includedir)/bsoncpp-$(VERSION)/
 library_include_HEADERS = $(BSONHEADERS)
+
+
 
 #########################################################
 # TESTS
