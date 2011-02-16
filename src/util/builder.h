@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include <boost/shared_ptr.hpp>
 
-#include "../inline_decls.h"
-#include "../stringdata.h"
+#include <bson/inline_decls.h>
+#include <bson/stringdata.h>
 
 namespace bson {
 

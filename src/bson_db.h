@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include "util/optime.h"
-#include "util/time_support.h"
+#include <bson/optime.h>
+#include <bson/time_support.h>
 
 #ifndef log
 #define log(...) std::cerr

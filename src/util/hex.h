@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include "bsonassert.h"
-#include "builder.h"
+#include <bson/bsonassert.h>
+#include <bson/builder.h>
 
 namespace bson {
 

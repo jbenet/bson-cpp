@@ -29,10 +29,10 @@
 #include <boost/spirit/utility/lists.hpp>
 #endif
 
-#include "json.h"
-#include "util/builder.h"
-#include "util/hex.h"
-#include "lib/base64.h"
+#include <bson/json.h>
+#include <bson/builder.h>
+#include <bson/hex.h>
+#include <bson/base64.h>
 
 using namespace boost::spirit;
 

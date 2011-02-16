@@ -20,9 +20,9 @@
 #include <set>
 #include <list>
 #include <vector>
-#include "util/builder.h"
-#include "stringdata.h"
-#include "bsonelement.h"
+#include <bson/builder.h>
+#include <bson/stringdata.h>
+#include <bson/bsonelement.h>
 
 namespace bson {
 

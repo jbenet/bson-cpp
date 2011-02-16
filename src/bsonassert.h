@@ -34,8 +34,8 @@
 #include <sstream>
 #include <boost/utility.hpp>
 
-#include "stringdata.h"
-#include "util/builder.h"
+#include <bson/stringdata.h>
+#include <bson/builder.h>
 
 namespace bson {
 
