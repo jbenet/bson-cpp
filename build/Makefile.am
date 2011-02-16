@@ -5,6 +5,8 @@ ACLOCAL_AMFLAGS = -I m4
 #########################################################
 # LIBRARY
 
+includedir = /usr/local/include/bson
+
 VERSION = 0.1
 
 BSONHEADERS = src/*.h src/util/*.h
@@ -18,14 +20,14 @@ libbsoncpp_la_SOURCES = $(BSONSOURCES) $(LIBSOURCES)
 libbsoncpp_la_CPPFLAGS = -fPIC $(AM_CPPFLAGS)
 libbsoncpp_la_LDFLAGS = -version-info 0:1:0
 
-library_includedir=$(includedir)/bsoncpp-$(VERSION)/something
+library_includedir=$(includedir)/bsoncpp-$(VERSION)/
 library_include_HEADERS = $(BSONHEADERS)
 
 #########################################################
 # TESTS
 
-testdir = test/
-test_PROGRAMS = test_bsonobj
+check_testdir = test/
+check_PROGRAMS = test_bsonobj
 test_RUNS = $(test_PROGRAMS:%=run_%)
 
 test_bsonobj_SOURCES = test/test_bsonobj.cpp test/framework.cpp
@@ -61,4 +63,4 @@ deep-clean: distclean
 	rm -f config.guess
 	rm -rf autom4te.cache
 	rm -rf */*.in *.in
-	rm -rf dronestore.so
+	rm -rf libbsoncpp.la
