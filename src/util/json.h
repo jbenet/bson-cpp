@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "bson.h"
+#include "../bson.h"
 
 namespace bson {
 
