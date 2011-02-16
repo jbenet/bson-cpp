@@ -79,8 +79,6 @@ namespace bson {
             init(msgdata, ifree);
         }
 
-        explicit BSONObj(const Record *r);
-
         /** Construct an empty BSONObj -- that is, {}. */
         BSONObj();
 

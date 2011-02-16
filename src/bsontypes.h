@@ -29,7 +29,6 @@ namespace bson {
     class BSONObjBuilderValueStream;
     class BSONObjIterator;
     class Ordering;
-    class Record;
     struct BSONArray; // empty subclass of BSONObj useful for overloading
     struct BSONElementCmpWithoutField;
 
