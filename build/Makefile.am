@@ -35,8 +35,8 @@ library_include_HEADERS = $(BSONHEADERS)
 #########################################################
 # TESTS
 
-check_testdir = test/
-check_PROGRAMS = test_bsonobj
+testdir = test/
+test_PROGRAMS = test_bsonobj
 test_RUNS = $(test_PROGRAMS:%=run_%)
 
 test_bsonobj_SOURCES = test/test_bsonobj.cpp test/framework.cpp
@@ -47,8 +47,6 @@ AM_LDFLAGS = $(BOOST_LDFLAGS) \
              $(BOOST_THREAD_LIB)
 LDADD = $(BOOST_THREAD_LIBS) libbsoncpp.la -lboost_system-mt
 LIBS = $(BOOST_THREAD_LIBS)
-
-#bin_PROGRAMS = dronestore
 
 #dist_bsoncpp_SCRIPTS = autogen.sh
 
