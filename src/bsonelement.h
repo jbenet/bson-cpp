@@ -62,22 +62,28 @@ namespace bson {
             string foo = obj["foo"].String();
             // exception if not a string type or DNE
         */
-        string String() const { return chk(bson::String).valuestr(); }
-        Date_t Date() const { return chk(bson::Date).date(); }
-        double Number() const { return chk(isNumber()).number(); }
-        double Double() const { return chk(NumberDouble)._numberDouble(); }
-        long long Long() const { return chk(NumberLong)._numberLong(); }
-        int Int() const { return chk(NumberInt)._numberInt(); }
-        bool Bool() const { return chk(bson::Bool).boolean(); }
-        BSONObj Obj() const;
-        vector<BSONElement> Array() const;
-          // see implementation for detailed comments
-        bson::OID OID() const { return chk(jstOID).__oid(); }
-        void Null() const { chk(isNull()); }
-        void OK() const { chk(ok()); }
+        string String()             const { return chk(bson::String).valuestr(); }
+        Date_t Date()               const { return chk(bson::Date).date(); }
+        double Number()             const { return chk(isNumber()).number(); }
+        double Double()             const { return chk(NumberDouble)._numberDouble(); }
+        long long Long()            const { return chk(NumberLong)._numberLong(); }
+        int Int()                   const { return chk(NumberInt)._numberInt(); }
+        bool Bool()                 const { return chk(bson::Bool).boolean(); }
+        vector<BSONElement> Array() const; // see implementation for detailed comments
+        mongo::OID OID()            const { return chk(jstOID).__oid(); }
+        void Null()                 const { chk(isNull()); } // throw UserException if not null
+        void OK()                   const { chk(ok()); }     // throw UserException if element DNE
 
-        /** populate v with the value of the element.  If type does not match,
-            throw exception. useful in templates -- see also BSONObj::Vals().
+	/** @return the embedded object associated with this field.
+            Note the returned object is a reference to within the parent bson object. If that 
+	    object is out of scope, this pointer will no longer be valid. Call getOwned() on the 
+	    returned BSONObj if you need your own copy.
+	    throws UserException if the element is not of type object.
+	*/
+        BSONObj Obj()               const;
+
+        /** populate v with the value of the element.  If type does not match, throw exception.
+            useful in templates -- see also BSONObj::Vals().
         */
         void Val(Date_t& v)         const { v = Date(); }
         void Val(long long& v)      const { v = Long(); }
@@ -126,7 +132,8 @@ namespace bson {
             @param maxLen If maxLen is specified, don't scan more than maxLen
             bytes to calculate size.
         */
-        int size( int maxLen = -1 ) const;
+        int size( int maxLen ) const;
+        int size() const;
 
         /** Wrap this element up as a singleton object. */
         BSONObj wrap() const;
@@ -161,8 +168,11 @@ namespace bson {
             return *value() ? true : false;
         }
 
+        bool booleanSafe() const { return isBoolean() && boolean(); }
+
         /** Retrieve a java style date value from the element.
             Ensure element is of type Date before calling.
+            @see Bool(), trueValue()
         */
         Date_t date() const {
             return *reinterpret_cast< const Date_t* >( value() );
@@ -170,7 +180,7 @@ namespace bson {
 
         /** Convert the value to boolean, regardless of its type, in a
             javascript-like fashion
-            (i.e., treat zero and null as false).
+            (i.e., treats zero and null and eoo as false).
         */
         bool trueValue() const;
 
@@ -220,7 +230,9 @@ namespace bson {
         }
 
         /** Size (length) of a string element.
-            You must assure of type String first.  */
+            You must assure of type String first.  
+            @return string size including terminating null
+        */
         int valuestrsize() const {
             return *reinterpret_cast< const int* >( value() );
         }
@@ -380,6 +392,7 @@ namespace bson {
             return *reinterpret_cast< const bson::OID* >( start );
         }
 
+        /** this does not use fieldName in the comparison, just the value */
         bool operator<( const BSONElement& other ) const {
             int x = (int)canonicalType() - (int)other.canonicalType();
             if ( x < 0 ) return true;
@@ -387,19 +400,30 @@ namespace bson {
             return compareElementValues(*this,other) < 0;
         }
 
-        // If maxLen is specified, don't scan more than maxLen bytes.
-        explicit BSONElement(const char *d, int maxLen = -1) : data(d) {
-            fieldNameSize_ = -1;
-            if ( eoo() )
+        // @param maxLen don't scan more than maxLen bytes
+        explicit BSONElement(const char *d, int maxLen) : data(d) {
+            if ( eoo() ) {
+                totalSize = 1;
                 fieldNameSize_ = 0;
+            }
             else {
+                totalSize = -1;
+                fieldNameSize_ = -1;
                 if ( maxLen != -1 ) {
                     int size = (int) strnlen( fieldName(), maxLen - 1 );
                     massert( 10333 ,  "Invalid field name", size != -1 );
                     fieldNameSize_ = size + 1;
                 }
             }
+        }
+
+        explicit BSONElement(const char *d) : data(d) {
+            fieldNameSize_ = -1;
             totalSize = -1;
+            if ( eoo() ) {
+                fieldNameSize_ = 0;
+                totalSize = 1;
+            }
         }
 
         string _asCode() const;
@@ -420,8 +444,11 @@ namespace bson {
         const BSONElement& chk(int t) const {
             if ( t != type() ) {
                 StringBuilder ss;
-                ss << "wrong type for BSONElement (" << fieldName() << ") "
-                   << type() << " != " << t;
+                if( eoo() )
+                    ss << "field not found, expected type " << t;
+                else
+                    ss << "wrong type for field (" << fieldName() << ") "
+                       << type() << " != " << t;
                 uasserted(13111, ss.str() );
             }
             return *this;
@@ -500,7 +527,7 @@ namespace bson {
         return true;
     }
 
-    /** True if element is of a numeric type. */
+    /** @return true if element is of a numeric type. */
     inline bool BSONElement::isNumber() const {
         switch( type() ) {
         case NumberLong:

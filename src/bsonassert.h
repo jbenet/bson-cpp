@@ -19,7 +19,7 @@
  */
 
 /**
-   bo and its helpers
+   Main include file for C++ BSON module when using standalone (sans MongoDB client).
 
    "BSON" stands for "binary JSON" -- ie a binary way to represent objects that
    would be represented in JSON (plus a few extensions useful for databases &
@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <cstdlib>
+#include <memory>
 #include <iostream>
 #include <sstream>
 #include <boost/utility.hpp>
@@ -46,7 +48,7 @@ namespace bson {
     public:
         assertion( unsigned u , const string& s )
             : id( u ) , msg( s ) {
-            bson::StringBuilder ss;
+            stringstream ss;
             ss << "BsonAssertion id: " << u << " " << s;
             full = ss.str();
         }

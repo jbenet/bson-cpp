@@ -34,10 +34,10 @@ namespace bson {
         unsigned pid;
 #if defined(_WIN32)
         pid = (unsigned short) GetCurrentProcessId();
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__sunos__)
         pid = (unsigned short) getpid();
 #else
-        pid = (unsigned short) security.getNonce();
+        pid = (unsigned short) Security::getNonce();
 #endif
         return pid;
     }
@@ -58,13 +58,13 @@ namespace bson {
         // gives us some testing that nonce generation is working right and that
         // our OIDs are (perhaps) ok.
         {
-            nonce a = security.getNonce();
-            nonce b = security.getNonce();
-            nonce c = security.getNonce();
+            nonce64 a = Security::getNonceDuringInit();
+            nonce64 b = Security::getNonceDuringInit();
+            nonce64 c = Security::getNonceDuringInit();
             assert( !(a==b && b==c) );
         }
 
-        unsigned long long n = security.getNonce();
+        unsigned long long n = Security::getNonceDuringInit();
         OID::MachineAndPid x = ourMachine = (OID::MachineAndPid&) n;
         foldInPid(x);
         return x;
