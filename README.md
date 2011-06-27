@@ -11,6 +11,10 @@ mongodb repository into its own.
 Other BSON implementations are available for most languages at
 http://bsonspec.org.
 
+## Status: beta
+
+Note that this is not yet ready for production. While all the majority of the code has been thoroughly tested in the mongodb distribution, this fork is not yet proved stable.
+
 ## Building
 
 The build system here uses autotools. It is a bit unconventional: it hides all
