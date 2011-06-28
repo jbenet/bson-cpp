@@ -21,7 +21,7 @@
 #include <set>
 #include <list>
 #include <vector>
-#include "util/atomic_int.h"
+#include "lib/atomic_int.h"
 #include "util/builder.h"
 #include "stringdata.h"
 #include "bsonelement.h"
@@ -75,10 +75,10 @@ namespace bson {
     public:
 
         /** Construct a BSONObj from data in the proper format.
-         *  Use this constructor when something else owns msgdata's buffer
+        * owned = whether this object owns this buffer.
         */
-        explicit BSONObj(const char *msgdata) {
-            init(msgdata);
+        explicit BSONObj(const char *msgdata, bool owned = false) {
+          init(msgdata, owned);
         }
 
         /** Construct a BSONObj from data in the proper format.
@@ -89,8 +89,6 @@ namespace bson {
         explicit BSONObj(Holder* holder) {
             init(holder);
         }
-
-        explicit BSONObj(const Record *r);
 
         /** Construct an empty BSONObj -- that is, {}. */
         BSONObj();
@@ -135,7 +133,7 @@ namespace bson {
         */
         bool isOwned() const { return _holder.get() != 0; }
 
-        /** assure the data buffer is under the control of this BSONObj and not a remote buffer 
+        /** assure the data buffer is under the control of this BSONObj and not a remote buffer
             @see isOwned()
         */
         BSONObj getOwned() const;
@@ -183,11 +181,10 @@ namespace bson {
         }
 
         /** Like getFieldDotted(), but expands arrays and returns all matching objects.
-         *  Turning off expandLastArray allows you to retrieve nested array objects instead of
-         *  their contents.
+         *  TODO(jbenet). trace bool expandLastArray param.
          */
-        void getFieldsDotted(const StringData& name, BSONElementSet &ret, bool expandLastArray = true ) const;
-        void getFieldsDotted(const StringData& name, BSONElementMSet &ret, bool expandLastArray = true ) const;
+        void getFieldsDotted(const StringData& name, BSONElementSet &ret) const;
+        void getFieldsDotted(const StringData& name, BSONElementMSet &ret)const;
 
         /** Like getFieldDotted(), but returns first array encountered while traversing the
             dotted fields of name.  The name variable is updated to represent field
@@ -199,7 +196,7 @@ namespace bson {
         */
         BSONElement getField(const StringData& name) const;
 
-        /** Get several fields at once. This is faster than separate getField() calls as the size of 
+        /** Get several fields at once. This is faster than separate getField() calls as the size of
             elements iterated can then be calculated only once each.
             @param n number of fieldNames, and number of elements in the fields array
             @param fields if a field is found its element is stored in its corresponding position in this array.
@@ -226,10 +223,10 @@ namespace bson {
         }
 
         /** @return true if field exists */
-        bool hasField( const char * name ) const 
+        bool hasField( const char * name ) const
           { return !getField(name).eoo(); }
         /** @return true if field exists */
-        bool hasElement(const char *name) const 
+        bool hasElement(const char *name) const
           { return hasField(name); }
 
         /** @return "" if DNE or wrong type */
@@ -241,7 +238,7 @@ namespace bson {
         /** @return INT_MIN if not present - does some type conversions */
         int getIntField(const char *name) const;
 
-        /** @return false if not present 
+        /** @return false if not present
             @see BSONElement::trueValue()
          */
         bool getBoolField(const char *name) const;
@@ -339,10 +336,10 @@ namespace bson {
         /** @return first field of the object */
         BSONElement firstElement() const { return BSONElement(objdata() + 4); }
 
-        /** faster than firstElement().fieldName() - for the first element we can easily find the fieldname without 
+        /** faster than firstElement().fieldName() - for the first element we can easily find the fieldname without
             computing the element size.
         */
-        const char * firstElementFieldName() const { 
+        const char * firstElementFieldName() const {
             const char *p = objdata() + 4;
             return *p == EOO ? "" : p+1;
         }
@@ -453,7 +450,7 @@ namespace bson {
         class Holder : boost::noncopyable {
         private:
             Holder(); // this class should never be explicitly created
-            AtomicUInt refCount;
+            mongo::AtomicUInt refCount;
         public:
             char data[4]; // start of object
 
@@ -486,6 +483,16 @@ namespace bson {
             _objdata = data;
             if ( !isValid() )
                 _assertInvalid();
+        }
+
+        void init(const char *data, bool ownership) {
+          if (ownership) {
+            Holder *h = (Holder*) malloc(objsize() + sizeof(unsigned));
+            h->zero();
+            init(h);
+          } else {
+            init(data);
+          }
         }
     };
 

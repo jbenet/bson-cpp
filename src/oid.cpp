@@ -58,13 +58,13 @@ namespace bson {
         // gives us some testing that nonce generation is working right and that
         // our OIDs are (perhaps) ok.
         {
-            nonce64 a = Security::getNonceDuringInit();
-            nonce64 b = Security::getNonceDuringInit();
-            nonce64 c = Security::getNonceDuringInit();
+            Nonce::nonce a = Nonce::security.getNonceInitSafe();
+            Nonce::nonce b = Nonce::security.getNonceInitSafe();
+            Nonce::nonce c = Nonce::security.getNonceInitSafe();
             assert( !(a==b && b==c) );
         }
 
-        unsigned long long n = Security::getNonceDuringInit();
+        unsigned long long n = Nonce::security.getNonceInitSafe();
         OID::MachineAndPid x = ourMachine = (OID::MachineAndPid&) n;
         foldInPid(x);
         return x;

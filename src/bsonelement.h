@@ -70,13 +70,13 @@ namespace bson {
         int Int()                   const { return chk(NumberInt)._numberInt(); }
         bool Bool()                 const { return chk(bson::Bool).boolean(); }
         vector<BSONElement> Array() const; // see implementation for detailed comments
-        mongo::OID OID()            const { return chk(jstOID).__oid(); }
+        bson::OID OID()            const { return chk(jstOID).__oid(); }
         void Null()                 const { chk(isNull()); } // throw UserException if not null
         void OK()                   const { chk(ok()); }     // throw UserException if element DNE
 
 	/** @return the embedded object associated with this field.
-            Note the returned object is a reference to within the parent bson object. If that 
-	    object is out of scope, this pointer will no longer be valid. Call getOwned() on the 
+            Note the returned object is a reference to within the parent bson object. If that
+	    object is out of scope, this pointer will no longer be valid. Call getOwned() on the
 	    returned BSONObj if you need your own copy.
 	    throws UserException if the element is not of type object.
 	*/
@@ -230,7 +230,7 @@ namespace bson {
         }
 
         /** Size (length) of a string element.
-            You must assure of type String first.  
+            You must assure of type String first.
             @return string size including terminating null
         */
         int valuestrsize() const {

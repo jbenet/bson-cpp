@@ -91,16 +91,16 @@ namespace bson {
         }
 
         /** @param baseBuilder construct a BSONObjBuilder using an existing BufBuilder
-         *  This is for more efficient adding of subobjects/arrays. See docs for 
+         *  This is for more efficient adding of subobjects/arrays. See docs for
          *  subobjStart for example.
          */
-        BSONObjBuilder( BufBuilder &baseBuilder ) : _b( baseBuilder ), _buf( 0 ), 
+        BSONObjBuilder( BufBuilder &baseBuilder ) : _b( baseBuilder ), _buf( 0 ),
           _offset( baseBuilder.len() ), _s( this ) , _tracker(0) , _doneCalled(false) {
             _b.skip( 4 );
         }
 
-        BSONObjBuilder( const BSONSizeTracker & tracker ) : _b(_buf) , 
-          _buf(tracker.getSize() + sizeof(unsigned) ), _offset( sizeof(unsigned) ), 
+        BSONObjBuilder( const BSONSizeTracker & tracker ) : _b(_buf) ,
+          _buf(tracker.getSize() + sizeof(unsigned) ), _offset( sizeof(unsigned) ),
           _s( this ) , _tracker( (BSONSizeTracker*)(&tracker) ) , _doneCalled(false) {
             _b.appendNum((unsigned)0); // ref-count
             _b.skip(4);
@@ -398,7 +398,7 @@ namespace bson {
             return *this;
         }
 
-        /** Append a string element. 
+        /** Append a string element.
             @param sz size includes terminating null character */
         BSONObjBuilder& append(const StringData& fieldName, const char *str,
           int sz) {
@@ -624,7 +624,7 @@ namespace bson {
         void appendKeys( const BSONObj& keyPattern , const BSONObj& values );
 
         static string numStr( int i ) {
-            if (i>=0 && i<100 && numStrsReady)
+            if (i>=0 && i<100)
                 return numStrs[i];
             StringBuilder o;
             o << i;
@@ -705,7 +705,6 @@ namespace bson {
         bool _doneCalled;
 
         static const string numStrs[100]; // cache of 0 to 99 inclusive
-        static bool numStrsReady; // for static init safety. see comments in db/jsobj.cpp
     };
 
     class BSONArrayBuilder : boost::noncopyable {

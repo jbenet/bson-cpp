@@ -1532,7 +1532,7 @@ namespace test_bsonobj {
             {
                 char * crap = (char*)malloc( x.objsize() );
                 memcpy( crap , x.objdata() , x.objsize() );
-                BSONObj y( crap , false );
+                BSONObj y( crap );
                 ASSERT_EQUALS( x , y );
                 free( crap );
             }

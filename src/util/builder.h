@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include "../inline_decls.h"
 #include "../stringdata.h"
+#include "../bsonassert.h"
 
 namespace bson {
 
@@ -48,7 +49,7 @@ namespace bson {
 
     void msgasserted(int msgid, const char *msg);
 
-    class TrivialAllocator { 
+    class TrivialAllocator {
     public:
         void* Malloc(size_t sz) { return malloc(sz); }
         void* Realloc(void *p, size_t sz) { return realloc(p, sz); }
@@ -60,20 +61,20 @@ namespace bson {
         enum { SZ = 512 };
         void* Malloc(size_t sz) {
             if( sz <= SZ ) return buf;
-            return malloc(sz); 
+            return malloc(sz);
         }
-        void* Realloc(void *p, size_t sz) { 
+        void* Realloc(void *p, size_t sz) {
             if( p == buf ) {
                 if( sz <= SZ ) return buf;
                 void *d = malloc(sz);
                 memcpy(d, p, SZ);
                 return d;
             }
-            return realloc(p, sz); 
+            return realloc(p, sz);
         }
-        void Free(void *p) { 
+        void Free(void *p) {
             if( p != buf )
-                free(p); 
+                free(p);
         }
     private:
         char buf[SZ];
@@ -216,13 +217,13 @@ namespace bson {
     typedef _BufBuilder<TrivialAllocator> BufBuilder;
 
     /** The StackBufBuilder builds smaller datasets on the stack instead of using malloc.
-          this can be significantly faster for small bufs.  However, you can not decouple() the 
+          this can be significantly faster for small bufs.  However, you can not decouple() the
           buffer with StackBufBuilder.
-        While designed to be a variable on the stack, if you were to dynamically allocate one, 
-          nothing bad would happen.  In fact in some circumstances this might make sense, say, 
+        While designed to be a variable on the stack, if you were to dynamically allocate one,
+          nothing bad would happen.  In fact in some circumstances this might make sense, say,
           embedded in some other object.
     */
-    class StackBufBuilder : public _BufBuilder<StackAllocator> { 
+    class StackBufBuilder : public _BufBuilder<StackAllocator> {
     public:
         StackBufBuilder() : _BufBuilder<StackAllocator>(StackAllocator::SZ) { }
         void decouple(); // not allowed. not implemented.
@@ -296,7 +297,7 @@ namespace bson {
         void reset( int maxSize = 0 ) { _buf.reset( maxSize ); }
 
         std::string str() const { return std::string(_buf.data, _buf.l); }
-        
+
         int len() const { return _buf.l; }
 
     private:

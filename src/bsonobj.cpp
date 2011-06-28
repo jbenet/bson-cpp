@@ -444,6 +444,7 @@ namespace bson {
     }
 
     /* wo = "well ordered" */
+    /* TODO(jbenet): does this belong here or in bson-inl.h?
     int BSONElement::woCompare( const BSONElement &e,
                                 bool considerFieldName ) const {
         int lt = (int) canonicalType();
@@ -458,10 +459,9 @@ namespace bson {
         }
         x = compareElementValues(*this, e);
         return x;
-    }
+    }*/
 
-    /* must be same type when called, unless both sides are #s
-    */
+    /* must be same type when called, unless both sides are #s*/
     int compareElementValues(const BSONElement& l, const BSONElement& r) {
         int f;
         double x;
@@ -960,6 +960,7 @@ namespace bson {
         return BSONElement();
     }
 
+    /* TOOD(jbenet) evaluate whether these belong there:
     int BSONObj::getIntField(const char *name) const {
         BSONElement e = getField(name);
         return e.isNumber() ? (int) e.number() : INT_MIN;
@@ -974,6 +975,7 @@ namespace bson {
         BSONElement e = getField(name);
         return e.type() == String ? e.valuestr() : "";
     }
+    */
 
     /* grab names of all the fields in this object */
     int BSONObj::getFieldNames(set<string>& fields) const {
@@ -1021,7 +1023,7 @@ namespace bson {
 
         if ( n ) {
             int len;
-            init( b.decouple(len), true );
+            init( b.decouple(len) );
         }
 
         return n;

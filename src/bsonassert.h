@@ -37,7 +37,6 @@
 #include <boost/utility.hpp>
 
 #include "stringdata.h"
-#include "util/builder.h"
 
 namespace bson {
 
