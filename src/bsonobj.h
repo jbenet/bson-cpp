@@ -77,8 +77,8 @@ namespace bson {
         /** Construct a BSONObj from data in the proper format.
         * owned = whether this object owns this buffer.
         */
-        explicit BSONObj(const char *msgdata, bool owned = false) {
-          init(msgdata, owned);
+        explicit BSONObj(const char *msgdata) {
+          init(msgdata);
         }
 
         /** Construct a BSONObj from data in the proper format.
@@ -485,15 +485,6 @@ namespace bson {
                 _assertInvalid();
         }
 
-        void init(const char *data, bool ownership) {
-          if (ownership) {
-            Holder *h = (Holder*) malloc(objsize() + sizeof(unsigned));
-            h->zero();
-            init(h);
-          } else {
-            init(data);
-          }
-        }
     };
 
     ostream& operator<<( ostream &s, const BSONObj &o );

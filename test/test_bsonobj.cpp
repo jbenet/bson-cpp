@@ -1544,7 +1544,7 @@ namespace test_bsonobj {
                 foo[0] = 123123123;
                 int state = 0;
                 try {
-                    BSONObj y( crap , false );
+                    BSONObj y( crap );
                     state = 1;
                 }
                 catch ( std::exception& e ) {
