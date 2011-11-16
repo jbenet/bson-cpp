@@ -18,7 +18,7 @@
 
 #define BOOST_SPIRIT_THREADSAFE
 //#if BOOST_VERSION >= 103800
-#if true
+#if 1
 #define BOOST_SPIRIT_USE_OLD_NAMESPACE
 #include <boost/spirit/include/classic_core.hpp>
 #include <boost/spirit/include/classic_loops.hpp>

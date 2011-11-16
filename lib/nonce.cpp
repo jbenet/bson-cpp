@@ -14,8 +14,13 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+#if defined(_WIN32)
+      #define _CRT_RAND_S
+      #include <stdlib.h>
+#endif
 
 #include "nonce.h"
+
 #include <boost/static_assert.hpp>
 #include <boost/thread/mutex.hpp>
 
@@ -57,6 +62,9 @@ namespace Nonce {
         _devrandom->read((char*)&n, sizeof(n));
         assert(!_devrandom->fail() && "devrandom failed");
       #elif defined(_WIN32)
+        #define _CRT_RAND_S
+      #include <stdlib.h>
+        
         unsigned a=0, b=0;
         assert( rand_s(&a) == 0 );
         assert( rand_s(&b) == 0 );

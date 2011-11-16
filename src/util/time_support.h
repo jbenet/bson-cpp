@@ -20,6 +20,7 @@
 #include <cstdio> // sscanf
 #include <ctime>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread/thread.hpp>
 #include <boost/thread/xtime.hpp>
 
 namespace bson {

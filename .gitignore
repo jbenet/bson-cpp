@@ -1,1 +1,4 @@
-build/
+
+/build/msvc_2010/Debug
+/build/msvc_2010/libbson-cpp/Debug
+/build/msvc_2010/libbson-cpp-test/Debug
