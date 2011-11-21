@@ -30,8 +30,8 @@
 #endif
 
 #include "json.h"
-#include "util/builder.h"
-#include "util/hex.h"
+#include "builder.h"
+#include "hex.h"
 #include "lib/base64.h"
 
 using namespace boost::spirit;
