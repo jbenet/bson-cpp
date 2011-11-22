@@ -1,4 +1,6 @@
-
 /build/msvc_2010/Debug
+/build/msvc_2010/Release
 /build/msvc_2010/libbson-cpp/Debug
+/build/msvc_2010/libbson-cpp/Release
 /build/msvc_2010/libbson-cpp-test/Debug
+/build/msvc_2010/libbson-cpp-test/Release
