@@ -32,7 +32,7 @@
 #include "json.h"
 #include "builder.h"
 #include "hex.h"
-#include "lib/base64.h"
+#include "../../lib/base64.h"
 
 using namespace boost::spirit;
 

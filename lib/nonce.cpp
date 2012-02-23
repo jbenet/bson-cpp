@@ -39,8 +39,8 @@ namespace Nonce {
         if( _initialized ) return;
             _initialized = true;
 
-      #if defined(__linux__) || defined(__sunos__)
-        _devrandom = new ifstream("/dev/urandom", ios::binary|ios::in);
+      #if defined(__linux__) || defined(__sunos__) || defined(__CYGWIN__)
+        _devrandom = new std::ifstream("/dev/urandom", std::ios::binary|std::ios::in);
         assert(_devrandom->is_open() && "can't open dev/urandom");
       #elif defined(_WIN32)
         srand(time(NULL));
