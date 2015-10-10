@@ -87,11 +87,11 @@ namespace bson {
             the cleanest choice, lacking a true unsigned64 datatype, but BinData
             has 5 bytes of overhead.
          */
-        unsigned long long asDate() const {
-            return reinterpret_cast<const unsigned long long*>(&i)[0];
+        unsigned long long asDate() const {			
+            return i;
         }
         long long asLL() const {
-            return reinterpret_cast<const long long*>(&i)[0];
+            return i;
         }
 
         bool isNull() const { return secs == 0; }

@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libbson-cpp", "build\msvc_2010\libbson-cpp\libbson-cpp.vcxproj", "{D4B94116-FDF8-496C-BF5D-219664A9B54B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libbson-cpp-test", "build\msvc_2010\libbson-cpp-test\libbson-cpp-test.vcxproj", "{7387F355-BD5D-4AD9-9721-2CBF22B7E4AE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D4B94116-FDF8-496C-BF5D-219664A9B54B} = {D4B94116-FDF8-496C-BF5D-219664A9B54B}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D4B94116-FDF8-496C-BF5D-219664A9B54B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D4B94116-FDF8-496C-BF5D-219664A9B54B}.Debug|Win32.Build.0 = Debug|Win32
+		{D4B94116-FDF8-496C-BF5D-219664A9B54B}.Release|Win32.ActiveCfg = Release|Win32
+		{D4B94116-FDF8-496C-BF5D-219664A9B54B}.Release|Win32.Build.0 = Release|Win32
+		{7387F355-BD5D-4AD9-9721-2CBF22B7E4AE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7387F355-BD5D-4AD9-9721-2CBF22B7E4AE}.Debug|Win32.Build.0 = Debug|Win32
+		{7387F355-BD5D-4AD9-9721-2CBF22B7E4AE}.Release|Win32.ActiveCfg = Release|Win32
+		{7387F355-BD5D-4AD9-9721-2CBF22B7E4AE}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

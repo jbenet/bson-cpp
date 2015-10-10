@@ -34,7 +34,7 @@ namespace bson {
         unsigned pid;
 #if defined(_WIN32)
         pid = (unsigned short) GetCurrentProcessId();
-#elif defined(__linux__) || defined(__APPLE__) || defined(__sunos__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__sunos__) || defined(__CYGWIN__)
         pid = (unsigned short) getpid();
 #else
         pid = (unsigned short) Security::getNonce();
@@ -47,8 +47,9 @@ namespace bson {
         x._pid ^= (unsigned short) p;
         // when the pid is greater than 16 bits, let the high bits modulate the
         // machine id field.
-        unsigned short& rest = (unsigned short &) x._machineNumber[1];
-        rest ^= p >> 16;
+		void* mn = (void*)&(x._machineNumber[1]);
+        unsigned short* rest = (unsigned short *) mn;
+        (*rest) ^= p >> 16;
     }
 
     OID::MachineAndPid OID::genMachineAndPid() {
@@ -88,7 +89,8 @@ namespace bson {
         x[1] = ourMachineAndPid._machineNumber[1];
         x[2] = ourMachineAndPid._machineNumber[2];
         x[3] = 0;
-        return (unsigned&) x[0];
+		unsigned *ux = (unsigned *)&x;
+        return *ux;
     }
 
     void OID::justForked() {

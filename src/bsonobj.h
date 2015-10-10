@@ -21,7 +21,7 @@
 #include <set>
 #include <list>
 #include <vector>
-#include "lib/atomic_int.h"
+#include "../lib/atomic_int.h"
 #include "util/builder.h"
 #include "stringdata.h"
 #include "bsonelement.h"
